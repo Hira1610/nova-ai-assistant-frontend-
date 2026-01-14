@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'chat_with_nova_screen.dart';
-import 'inbox_screen.dart';
-import 'profile_screen.dart';
+import '../widgets/custom_bottom_nav.dart';
 
 // --- Data Model for a Meeting ---
 class Meeting {
@@ -30,10 +28,7 @@ class _MeetingsScreenState extends State<MeetingsScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFF2B145E),
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
-        ),
+        automaticallyImplyLeading: false, // Removed back arrow
         title: const Text('Meetings', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
         actions: [
           Padding(
@@ -65,7 +60,7 @@ class _MeetingsScreenState extends State<MeetingsScreen> {
           ),
         ],
       ),
-      bottomNavigationBar: _buildBottomNavigation(context),
+      bottomNavigationBar: const CustomBottomNav(currentItem: NavItem.tasks), // Using shared bottom nav
     );
   }
 
@@ -128,50 +123,6 @@ class _MeetingsScreenState extends State<MeetingsScreen> {
           ),
         );
       },
-    );
-  }
-
-  Widget _buildBottomNavigation(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      decoration: BoxDecoration(
-        color: const Color(0xFF4A1B7B).withOpacity(0.6),
-        borderRadius: BorderRadius.circular(30),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          IconButton(
-            onPressed: () {
-              Navigator.popUntil(context, (route) => route.isFirst);
-            },
-            icon: const Icon(Icons.home_outlined, color: Colors.white54, size: 28),
-          ),
-          IconButton(
-            onPressed: () {
-               Navigator.push(context, MaterialPageRoute(builder: (_) => const ChatWithNovaScreen()));
-            },
-            icon: const Icon(Icons.chat_bubble_outline, color: Colors.white54, size: 28),
-          ),
-          IconButton(
-            onPressed: () {
-               Navigator.push(context, MaterialPageRoute(builder: (_) => const InboxScreen()));
-            },
-            icon: const Icon(Icons.email_outlined, color: Colors.white54, size: 28),
-          ),
-          IconButton(
-            onPressed: () { /* Already on this screen */ },
-            icon: const Icon(Icons.check_circle, color: Color(0xFF9C6BFF), size: 28),
-          ),
-          IconButton(
-            onPressed: () {
-              Navigator.push(context, MaterialPageRoute(builder: (_) => const ProfileScreen()));
-            },
-            icon: const Icon(Icons.person_outline, color: Colors.white54, size: 28),
-          ),
-        ],
-      ),
     );
   }
 }

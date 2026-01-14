@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../widgets/custom_bottom_nav.dart';
 
 // --- Data Model for a Message ---
 class Message {
@@ -22,50 +23,57 @@ class ChatWithNovaScreen extends StatelessWidget {
       Message(isUser: false, text: "You have 2 meetings today:\n• Team Sync at 2:00 PM\n• Client Call at 4:30 PM", time: "10:32 AM"),
     ];
 
-    return Scaffold(
-      backgroundColor: const Color(0xFF2B145E),
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Color(0xFF2B145E), Color(0xFF4A1B7B), Color(0xFF6A1FB0)],
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
         ),
-        title: const Text('NOVA', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-        backgroundColor: const Color(0xFF2B145E),
-        elevation: 0,
-        actions: const [Icon(Icons.more_vert, color: Colors.white)],
       ),
-      body: Column(
-        children: [
-          Expanded(
-            child: ListView.builder(
-              padding: const EdgeInsets.all(16),
-              itemCount: messages.length,
-              itemBuilder: (context, index) {
-                final message = messages[index];
-                return Align(
-                  alignment: message.isUser ? Alignment.centerRight : Alignment.centerLeft,
-                  child: Container(
-                    margin: const EdgeInsets.symmetric(vertical: 8),
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: message.isUser ? const Color(0xFF4A1B7B) : const Color(0xFF6A1FB0),
-                      borderRadius: BorderRadius.circular(20),
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          automaticallyImplyLeading: false, // This removes the back arrow
+          title: const Text('Let\'s Chat', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          actions: const [Padding(padding: EdgeInsets.only(right: 8.0), child: Icon(Icons.more_vert, color: Colors.white))],
+        ),
+        body: Column(
+          children: [
+            Expanded(
+              child: ListView.builder(
+                padding: const EdgeInsets.all(16),
+                itemCount: messages.length,
+                itemBuilder: (context, index) {
+                  final message = messages[index];
+                  return Align(
+                    alignment: message.isUser ? Alignment.centerRight : Alignment.centerLeft,
+                    child: Container(
+                      margin: const EdgeInsets.symmetric(vertical: 8),
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: message.isUser ? const Color(0xFF4A1B7B) : const Color(0xFF6A1FB0),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(message.text, style: const TextStyle(color: Colors.white, fontSize: 16)),
+                          const SizedBox(height: 4),
+                          Text(message.time, style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 12)),
+                        ],
+                      ),
                     ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(message.text, style: const TextStyle(color: Colors.white, fontSize: 16)),
-                        const SizedBox(height: 4),
-                        Text(message.time, style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 12)),
-                      ],
-                    ),
-                  ),
-                );
-              },
+                  );
+                },
+              ),
             ),
-          ),
-          _buildMessageComposer(),
-        ],
+            _buildMessageComposer(),
+          ],
+        ),
+        bottomNavigationBar: const CustomBottomNav(currentItem: NavItem.chat), // Added bottom nav
       ),
     );
   }

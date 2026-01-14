@@ -45,9 +45,7 @@ class _SignInScreenState extends State<SignInScreen> {
       final username = _nameController.text;
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(
-          builder: (_) => HomeScreen(username: username),
-        ),
+        MaterialPageRoute(builder: (context) => HomeScreen(username: username)),
       );
     }
   }
@@ -69,7 +67,7 @@ class _SignInScreenState extends State<SignInScreen> {
               Navigator.pop(context); // Close the dialog
               Navigator.pushReplacement(
                 context,
-                MaterialPageRoute(builder: (_) => const HomeScreen(username: 'Google User')),
+                MaterialPageRoute(builder: (context) => const HomeScreen(username: 'Google User')),
               );
             },
             child: const Text('Continue', style: TextStyle(color: Color(0xFF9C6BFF), fontWeight: FontWeight.bold)),

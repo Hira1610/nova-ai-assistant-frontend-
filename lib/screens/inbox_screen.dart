@@ -1,8 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'profile_screen.dart';
-import 'tasks_screen.dart';
-import 'chat_with_nova_screen.dart';
+import '../widgets/custom_bottom_nav.dart';
 
 // --- Data Model for Email ---
 class EmailItem {
@@ -41,112 +39,74 @@ class InboxScreen extends StatelessWidget {
       EmailItem(sender: 'HR Department', subject: 'Benefits Enrollment Reminder', snippet: 'Don\'t forget to complete your benefits enrollment by the end of month...', time: '3 days ago'),
     ];
 
-    return Scaffold(
-      backgroundColor: const Color(0xFF2B145E),
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: const Text('Inbox', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.add_circle, color: Colors.white, size: 28),
-            onPressed: () => _showComposeDialog(context),
-          ),
-        ],
-        backgroundColor: const Color(0xFF2B145E),
-        elevation: 0,
-      ),
-      body: ListView.builder(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        itemCount: emails.length,
-        itemBuilder: (context, index) {
-          final email = emails[index];
-          return Card(
-            margin: const EdgeInsets.symmetric(vertical: 8),
-            color: const Color(0xFF4A1B7B).withOpacity(0.6),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Row(
-                        children: [
-                          if (!email.isRead)
-                            Container(
-                              width: 8,
-                              height: 8,
-                              decoration: const BoxDecoration(
-                                color: Color(0xFF9C6BFF),
-                                shape: BoxShape.circle,
-                              ),
-                            ),
-                          if (!email.isRead) const SizedBox(width: 8),
-                          Text(email.sender, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
-                        ],
-                      ),
-                      Text(email.time, style: const TextStyle(color: Colors.white70)),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Text(email.subject, style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 4),
-                  Text(email.snippet, style: const TextStyle(color: Colors.white70), maxLines: 1, overflow: TextOverflow.ellipsis),
-                ],
-              ),
-            ),
-          );
-        },
-      ),
-      bottomNavigationBar: _buildBottomNavigation(context),
-    );
-  }
-
-  Widget _buildBottomNavigation(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      decoration: BoxDecoration(
-        color: const Color(0xFF4A1B7B).withOpacity(0.6),
-        borderRadius: BorderRadius.circular(30),
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Color(0xFF2B145E), Color(0xFF4A1B7B), Color(0xFF6A1FB0)],
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+        ),
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          IconButton(
-            onPressed: () {
-              Navigator.popUntil(context, (route) => route.isFirst);
-            },
-            icon: const Icon(Icons.home_outlined, color: Colors.white54, size: 28),
-          ),
-          IconButton(
-            onPressed: () {
-              Navigator.push(context, MaterialPageRoute(builder: (_) => const ChatWithNovaScreen()));
-            },
-            icon: const Icon(Icons.chat_bubble_outline, color: Colors.white54, size: 28),
-          ),
-          IconButton(
-            onPressed: () { /* Already on this screen */ },
-            icon: const Icon(Icons.email, color: Color(0xFF9C6BFF), size: 28),
-          ),
-          IconButton(
-            onPressed: () {
-               Navigator.push(context, MaterialPageRoute(builder: (_) => const TasksScreen()));
-            },
-            icon: const Icon(Icons.check_box_outline_blank, color: Colors.white54, size: 28),
-          ),
-          IconButton(
-            onPressed: () {
-               Navigator.push(context, MaterialPageRoute(builder: (_) => const ProfileScreen()));
-            },
-            icon: const Icon(Icons.person_outline, color: Colors.white54, size: 28),
-          ),
-        ],
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          automaticallyImplyLeading: false,
+          title: const Text('Inbox', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.add_circle, color: Colors.white, size: 28),
+              onPressed: () => _showComposeDialog(context),
+            ),
+          ],
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+        ),
+        body: ListView.builder(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          itemCount: emails.length,
+          itemBuilder: (context, index) {
+            final email = emails[index];
+            return Card(
+              margin: const EdgeInsets.symmetric(vertical: 8),
+              color: const Color(0xFF4A1B7B).withOpacity(0.6),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            if (!email.isRead)
+                              Container(
+                                width: 8,
+                                height: 8,
+                                decoration: const BoxDecoration(
+                                  color: Color(0xFF9C6BFF),
+                                  shape: BoxShape.circle,
+                                ),
+                              ),
+                            if (!email.isRead) const SizedBox(width: 8),
+                            Text(email.sender, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+                          ],
+                        ),
+                        Text(email.time, style: const TextStyle(color: Colors.white70)),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Text(email.subject, style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 4),
+                    Text(email.snippet, style: const TextStyle(color: Colors.white70), maxLines: 1, overflow: TextOverflow.ellipsis),
+                  ],
+                ),
+              ),
+            );
+          },
+        ),
+        bottomNavigationBar: const CustomBottomNav(currentItem: NavItem.email),
       ),
     );
   }

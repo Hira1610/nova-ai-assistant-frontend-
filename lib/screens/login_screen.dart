@@ -39,9 +39,7 @@ class _LoginScreenState extends State<LoginScreen> {
       final username = email.split('@').first;
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(
-          builder: (_) => HomeScreen(username: username),
-        ),
+        MaterialPageRoute(builder: (context) => HomeScreen(username: username)),
       );
     }
   }
@@ -63,7 +61,7 @@ class _LoginScreenState extends State<LoginScreen> {
               Navigator.pop(context); // Close the dialog
               Navigator.pushReplacement(
                 context,
-                MaterialPageRoute(builder: (_) => const HomeScreen(username: 'Google User')),
+                MaterialPageRoute(builder: (context) => const HomeScreen(username: 'Google User')),
               );
             },
             child: const Text('Continue', style: TextStyle(color: Color(0xFF9C6BFF), fontWeight: FontWeight.bold)),
@@ -98,9 +96,9 @@ class _LoginScreenState extends State<LoginScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Spacer(flex: 2),
-                    const Text("Welcome", style: TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.bold)),
+                    const Text("Welcome Back", style: TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.bold)),
                     const SizedBox(height: 8),
-                    const Text("Log in to continue", style: TextStyle(color: Colors.white70)),
+                    const Text("Sign in to continue", style: TextStyle(color: Colors.white70)),
                     const SizedBox(height: 40),
                     _inputField(
                       controller: _emailController,

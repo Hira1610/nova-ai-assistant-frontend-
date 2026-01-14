@@ -1,89 +1,71 @@
 import 'package:flutter/material.dart';
-import 'dart:async'; // Needed for Future.delayed
+import '../widgets/custom_bottom_nav.dart';
+import 'chat_with_nova_screen.dart';
 
-// --- Data Model for a Chat Message ---
-class ChatMessage {
-  final String sender;
-  final String text;
+// --- Data Model ---
+class Chat {
+  final String name;
+  final String lastMessage;
   final String time;
+  final int unreadCount;
 
-  ChatMessage({required this.sender, required this.text, required this.time});
-
-  /*
-  // --- Backend Integration Example ---
-  factory ChatMessage.fromJson(Map<String, dynamic> json) {
-    return ChatMessage(
-      sender: json['sender'],
-      text: json['text'],
-      time: json['time'],
-    );
-  }
-  */
+  Chat({required this.name, required this.lastMessage, required this.time, this.unreadCount = 0});
 }
 
-class ChatHistoryScreen extends StatefulWidget {
+// --- Chat History Screen ---
+class ChatHistoryScreen extends StatelessWidget {
   const ChatHistoryScreen({super.key});
 
   @override
-  State<ChatHistoryScreen> createState() => _ChatHistoryScreenState();
-}
-
-class _ChatHistoryScreenState extends State<ChatHistoryScreen> {
-  List<ChatMessage> _messages = [];
-
-  @override
-  void initState() {
-    super.initState();
-    _fetchChatHistory();
-  }
-
-  // --- Data Fetching ---
-  void _fetchChatHistory() {
-    final mockMessages = [
-      ChatMessage(sender: 'NOVA', text: 'How can I help you today?', time: '10:30 AM'),
-      ChatMessage(sender: 'You', text: 'What\'s the weather like tomorrow?', time: '10:31 AM'),
-      ChatMessage(sender: 'NOVA', text: 'It will be sunny with a high of 25°C.', time: '10:32 AM'),
+  Widget build(BuildContext context) {
+    final List<Chat> chats = [
+      Chat(name: 'NOVA', lastMessage: 'How can I help you today?', time: '10:30', unreadCount: 1),
+      Chat(name: 'Alice', lastMessage: 'Sure, I can help with that.', time: '10:25'),
+      Chat(name: 'Bob', lastMessage: 'Let\'s schedule a meeting for tomorrow.', time: 'Yesterday', unreadCount: 3),
     ];
 
-    setState(() {
-      _messages = mockMessages;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFF2B145E),
       appBar: AppBar(
-        title: const Text('Chat History', style: TextStyle(color: Colors.white70)),
+        automaticallyImplyLeading: false,
+        title: const Text('Chats', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
         backgroundColor: const Color(0xFF2B145E),
         elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.white),
       ),
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Color(0xFF2B145E), Color(0xFF4A1B7B), Color(0xFF6A1FB0)],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-          ),
-        ),
-        child: ListView.builder(
-          padding: const EdgeInsets.all(16.0),
-          itemCount: _messages.length,
-          itemBuilder: (context, index) {
-            final message = _messages[index];
-            return ListTile(
-              leading: CircleAvatar(
-                backgroundColor: const Color(0xFF9C6BFF),
-                child: Text(message.sender[0], style: const TextStyle(color: Colors.white)),
-              ),
-              title: Text(message.sender, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-              subtitle: Text(message.text, style: const TextStyle(color: Colors.white70)),
-              trailing: Text(message.time, style: const TextStyle(color: Colors.white54)),
-            );
-          },
-        ),
+      body: ListView.builder(
+        itemCount: chats.length,
+        itemBuilder: (context, index) {
+          final chat = chats[index];
+          return ListTile(
+            leading: CircleAvatar(
+              backgroundColor: const Color(0xFF4A1B7B),
+              child: Text(chat.name[0], style: const TextStyle(color: Colors.white)),
+            ),
+            title: Text(chat.name, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            subtitle: Text(chat.lastMessage, style: const TextStyle(color: Colors.white70)),
+            trailing: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(chat.time, style: const TextStyle(color: Colors.white70, fontSize: 12)),
+                if (chat.unreadCount > 0)
+                  Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: const BoxDecoration(color: Color(0xFF9C6BFF), shape: BoxShape.circle),
+                    child: Text(chat.unreadCount.toString(), style: const TextStyle(color: Colors.white, fontSize: 12)),
+                  ),
+              ],
+            ),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const ChatWithNovaScreen()),
+              );
+            },
+          );
+        },
       ),
+      bottomNavigationBar: const CustomBottomNav(currentItem: NavItem.chat),
     );
   }
 }

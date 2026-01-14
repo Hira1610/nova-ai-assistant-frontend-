@@ -23,6 +23,13 @@ class Email {
   Email({required this.subject, required this.sender, required this.snippet, required this.time});
 }
 
+class Meeting {
+  final String title;
+  final String time;
+
+  Meeting({required this.title, required this.time});
+}
+
 // --- Home Screen ---
 class HomeScreen extends StatefulWidget {
   final String username;
@@ -35,6 +42,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   List<Chat> _recentChats = [];
   List<Email> _recentEmails = [];
+  List<Meeting> _meetings = [];
 
   // State for the automation toggles
   bool _autoReplyEnabled = true;
@@ -48,7 +56,6 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _fetchData() {
-    // Mock data source
     final mockChats = [
       Chat(sender: 'NOVA', message: 'How can I help you today?', time: '10:30 AM'),
     ];
@@ -57,25 +64,31 @@ class _HomeScreenState extends State<HomeScreen> {
       Email(subject: 'Team Meeting', sender: 'Project Updates', snippet: 'Review the latest project milestones...', time: '10:55 AM'),
     ];
 
+    final mockMeetings = [
+      Meeting(title: 'Team Standup', time: '9:00 AM - 9:30 AM'),
+      Meeting(title: 'Client Presentation', time: '11:00 AM - 12:30 PM'),
+    ];
+
     setState(() {
       _recentChats = mockChats;
       _recentEmails = mockEmails;
+      _meetings = mockMeetings;
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.black,
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Color(0xFF2B145E), Color(0xFF4A1B7B), Color(0xFF6A1FB0)],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-          ),
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Color(0xFF2B145E), Color(0xFF4A1B7B), Color(0xFF6A1FB0)],
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
         ),
-        child: SafeArea(
+      ),
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        body: SafeArea(
           child: Padding(
             padding: const EdgeInsets.all(16),
             child: Column(
@@ -92,6 +105,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         const SizedBox(height: 25),
                         _buildRecentEmails(context),
                         const SizedBox(height: 25),
+                        _buildMeetingsSection(context),
+                        const SizedBox(height: 25),
                         _buildAutomationsSection(),
                       ],
                     ),
@@ -101,12 +116,13 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
         ),
+        bottomNavigationBar: const CustomBottomNav(currentItem: NavItem.home),
       ),
-      bottomNavigationBar: const CustomBottomNav(currentItem: NavItem.home),
     );
   }
 
   Widget _buildHeader() {
+    // ... (This widget remains unchanged)
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -131,7 +147,8 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildRecentChats(BuildContext context) {
-    return Column(
+    // ... (This widget remains unchanged)
+     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
@@ -182,6 +199,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildRecentEmails(BuildContext context) {
+    // ... (This widget remains unchanged)
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -224,7 +242,65 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  Widget _buildMeetingsSection(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: const [
+            Icon(Icons.calendar_today, color: Colors.white, size: 20),
+            SizedBox(width: 8),
+            Text("Today\'s Meetings", style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+          ],
+        ),
+        const SizedBox(height: 10),
+        glassCard(
+          child: Column(
+            children: _meetings.asMap().entries.map((entry) {
+              int idx = entry.key;
+              Meeting meeting = entry.value;
+              return Column(
+                children: [
+                  _buildMeetingTile(meeting),
+                  if (idx < _meetings.length - 1) const Divider(color: Colors.white24, height: 1),
+                ],
+              );
+            }).toList(),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildMeetingTile(Meeting meeting) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(meeting.title, style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 4),
+              Text(meeting.time, style: const TextStyle(color: Colors.white70)),
+            ],
+          ),
+          IconButton(
+            icon: const Icon(Icons.notifications_active_outlined, color: Colors.white),
+            onPressed: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Reminder set for ${meeting.title}')),
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildAutomationsSection() {
+    // ... (This widget remains unchanged)
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -264,6 +340,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildAutomationTile({required String title, required bool value, required ValueChanged<bool> onChanged}) {
+    // ... (This widget remains unchanged)
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4.0),
       child: Row(

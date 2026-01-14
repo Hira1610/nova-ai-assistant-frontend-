@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
-import 'home_screen.dart'; // For navigation
-import 'chat_with_nova_screen.dart'; // For navigation
-import 'inbox_screen.dart'; // For navigation
-import 'profile_screen.dart';
+import '../widgets/custom_bottom_nav.dart';
 
 // --- Data Model for a Task ---
 class Task {
@@ -53,36 +50,42 @@ class _TasksScreenState extends State<TasksScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFF2B145E),
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Color(0xFF2B145E), Color(0xFF4A1B7B), Color(0xFF6A1FB0)],
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
         ),
-        title: const Text('Tasks', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 8.0),
-            child: IconButton(
-              icon: const Icon(Icons.add_circle, color: Colors.white, size: 28),
-              onPressed: () => _showAddTaskSheet(context),
+      ),
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          automaticallyImplyLeading: false,
+          title: const Text('Tasks', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+          actions: [
+            Padding(
+              padding: const EdgeInsets.only(right: 8.0),
+              child: IconButton(
+                icon: const Icon(Icons.add_circle, color: Colors.white, size: 28),
+                onPressed: () => _showAddTaskSheet(context),
+              ),
             ),
-          ),
-        ],
-        backgroundColor: const Color(0xFF2B145E),
-        elevation: 0,
+          ],
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+        ),
+        body: Column(
+          children: [
+            _buildFilterButtons(),
+            const SizedBox(height: 16),
+            Expanded(
+              child: _buildTaskList(),
+            ),
+          ],
+        ),
+        bottomNavigationBar: const CustomBottomNav(currentItem: NavItem.tasks),
       ),
-      body: Column(
-        children: [
-          _buildFilterButtons(),
-          const SizedBox(height: 16),
-          Expanded(
-            child: _buildTaskList(),
-          ),
-        ],
-      ),
-      bottomNavigationBar: _buildBottomNavigation(context),
     );
   }
 
@@ -291,50 +294,6 @@ class _TasksScreenState extends State<TasksScreen> {
           ),
         );
       },
-    );
-  }
-
-  Widget _buildBottomNavigation(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      decoration: BoxDecoration(
-        color: const Color(0xFF4A1B7B).withOpacity(0.6),
-        borderRadius: BorderRadius.circular(30),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          IconButton(
-            onPressed: () {
-              Navigator.popUntil(context, (route) => route.isFirst);
-            },
-            icon: const Icon(Icons.home_outlined, color: Colors.white54, size: 28),
-          ),
-          IconButton(
-            onPressed: () {
-              Navigator.push(context, MaterialPageRoute(builder: (_) => const ChatWithNovaScreen()));
-            },
-            icon: const Icon(Icons.chat_bubble_outline, color: Colors.white54, size: 28),
-          ),
-          IconButton(
-            onPressed: () {
-              Navigator.push(context, MaterialPageRoute(builder: (_) => const InboxScreen()));
-            },
-            icon: const Icon(Icons.email_outlined, color: Colors.white54, size: 28),
-          ),
-          IconButton(
-            onPressed: () { /* Already on this screen */ },
-            icon: const Icon(Icons.check_box, color: Color(0xFF9C6BFF), size: 28),
-          ),
-          IconButton(
-            onPressed: () {
-               Navigator.push(context, MaterialPageRoute(builder: (_) => const ProfileScreen()));
-            },
-            icon: const Icon(Icons.person_outline, color: Colors.white54, size: 28),
-          ),
-        ],
-      ),
     );
   }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:async'; // Needed for Future.delayed
 import '../widgets/loading_robot.dart';
+import '../widgets/custom_bottom_nav.dart';
 
 // --- Data Model for an Email ---
 class Email {
@@ -56,39 +57,45 @@ class _EmailHistoryScreenState extends State<EmailHistoryScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Email History', style: TextStyle(color: Colors.white70)),
-        backgroundColor: const Color(0xFF2B145E),
-        elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.white),
-      ),
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Color(0xFF2B145E), Color(0xFF4A1B7B), Color(0xFF6A1FB0)],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-          ),
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Color(0xFF2B145E), Color(0xFF4A1B7B), Color(0xFF6A1FB0)],
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
         ),
-        child: _isLoading
+      ),
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          automaticallyImplyLeading: false,
+          title: const Text('Email History', style: TextStyle(color: Colors.white70)),
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+        ),
+        body: _isLoading
             ? const LoadingRobot()
-            : Expanded(
-                child: ListView.separated(
-                  padding: const EdgeInsets.all(16.0),
-                  itemCount: _emails.length,
-                  separatorBuilder: (context, index) => const SizedBox(height: 10),
-                  itemBuilder: (context, index) {
-                    final email = _emails[index];
-                    return ListTile(
-                      leading: const Icon(Icons.email, color: Colors.white),
-                      title: Text(email.subject, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                      subtitle: Text(email.sender, style: const TextStyle(color: Colors.white70)),
-                      trailing: Text(email.time, style: const TextStyle(color: Colors.white54)),
-                    );
-                  },
-                ),
+            : Column( // Added Column to resolve layout error
+                children: [
+                  Expanded(
+                    child: ListView.separated(
+                      padding: const EdgeInsets.all(16.0),
+                      itemCount: _emails.length,
+                      separatorBuilder: (context, index) => const SizedBox(height: 10),
+                      itemBuilder: (context, index) {
+                        final email = _emails[index];
+                        return ListTile(
+                          leading: const Icon(Icons.email, color: Colors.white),
+                          title: Text(email.subject, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                          subtitle: Text(email.sender, style: const TextStyle(color: Colors.white70)),
+                          trailing: Text(email.time, style: const TextStyle(color: Colors.white54)),
+                        );
+                      },
+                    ),
+                  ),
+                ],
               ),
+        bottomNavigationBar: const CustomBottomNav(currentItem: NavItem.email),
       ),
     );
   }

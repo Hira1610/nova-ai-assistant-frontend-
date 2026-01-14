@@ -44,7 +44,12 @@ class CustomBottomNav extends StatelessWidget {
         Widget screen;
         switch (item) {
           case NavItem.home:
-            Navigator.popUntil(context, (route) => route.isFirst); // Go back to home
+            // Correctly navigate to the home screen
+            Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(builder: (context) => const HomeScreen(username: 'User')), // Assuming a default username
+              (Route<dynamic> route) => false,
+            );
             return;
           case NavItem.chat:
             screen = const ChatWithNovaScreen();
