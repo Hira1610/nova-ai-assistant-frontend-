@@ -80,14 +80,14 @@ class ChatWithNovaScreen extends StatelessWidget {
 
   Widget _buildMessageComposer() {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      color: const Color(0xFF2B145E),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      color: Colors.transparent, // Changed to transparent
       child: Row(
         children: [
           Expanded(
             child: Container(
               decoration: BoxDecoration(
-                color: const Color(0xFF4A1B7B),
+                color: Colors.white.withAlpha(30), // Glass effect
                 borderRadius: BorderRadius.circular(30),
               ),
               child: const TextField(
@@ -96,19 +96,21 @@ class ChatWithNovaScreen extends StatelessWidget {
                   hintText: 'Type a message...',
                   hintStyle: TextStyle(color: Colors.white70),
                   border: InputBorder.none,
-                  contentPadding: EdgeInsets.symmetric(horizontal: 20),
+                  contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
                 ),
               ),
             ),
           ),
           const SizedBox(width: 8),
           const CircleAvatar(
-            backgroundColor: Color(0xFF6A1FB0),
+            radius: 24,
+            backgroundColor: Color(0xFF9C6BFF),
             child: Icon(Icons.send, color: Colors.white),
           ),
           const SizedBox(width: 8),
           const CircleAvatar(
-            backgroundColor: Color(0xFF6A1FB0),
+            radius: 24,
+            backgroundColor: Color(0xFF9C6BFF),
             child: Icon(Icons.mic, color: Colors.white),
           ),
         ],

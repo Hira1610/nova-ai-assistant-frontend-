@@ -24,48 +24,57 @@ class ChatHistoryScreen extends StatelessWidget {
       Chat(name: 'Bob', lastMessage: 'Let\'s schedule a meeting for tomorrow.', time: 'Yesterday', unreadCount: 3),
     ];
 
-    return Scaffold(
-      backgroundColor: const Color(0xFF2B145E),
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        title: const Text('Chats', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-        backgroundColor: const Color(0xFF2B145E),
-        elevation: 0,
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Color(0xFF2B145E), Color(0xFF4A1B7B), Color(0xFF6A1FB0)],
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+        ),
       ),
-      body: ListView.builder(
-        itemCount: chats.length,
-        itemBuilder: (context, index) {
-          final chat = chats[index];
-          return ListTile(
-            leading: CircleAvatar(
-              backgroundColor: const Color(0xFF4A1B7B),
-              child: Text(chat.name[0], style: const TextStyle(color: Colors.white)),
-            ),
-            title: Text(chat.name, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-            subtitle: Text(chat.lastMessage, style: const TextStyle(color: Colors.white70)),
-            trailing: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Text(chat.time, style: const TextStyle(color: Colors.white70, fontSize: 12)),
-                if (chat.unreadCount > 0)
-                  Container(
-                    padding: const EdgeInsets.all(6),
-                    decoration: const BoxDecoration(color: Color(0xFF9C6BFF), shape: BoxShape.circle),
-                    child: Text(chat.unreadCount.toString(), style: const TextStyle(color: Colors.white, fontSize: 12)),
-                  ),
-              ],
-            ),
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const ChatWithNovaScreen()),
-              );
-            },
-          );
-        },
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          automaticallyImplyLeading: false,
+          title: const Text('Chats', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+        ),
+        body: ListView.builder(
+          itemCount: chats.length,
+          itemBuilder: (context, index) {
+            final chat = chats[index];
+            return ListTile(
+              leading: CircleAvatar(
+                backgroundColor: const Color(0xFF4A1B7B),
+                child: Text(chat.name[0], style: const TextStyle(color: Colors.white)),
+              ),
+              title: Text(chat.name, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+              subtitle: Text(chat.lastMessage, style: const TextStyle(color: Colors.white70)),
+              trailing: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(chat.time, style: const TextStyle(color: Colors.white70, fontSize: 12)),
+                  if (chat.unreadCount > 0)
+                    Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: const BoxDecoration(color: Color(0xFF9C6BFF), shape: BoxShape.circle),
+                      child: Text(chat.unreadCount.toString(), style: const TextStyle(color: Colors.white, fontSize: 12)),
+                    ),
+                ],
+              ),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const ChatWithNovaScreen()),
+                );
+              },
+            );
+          },
+        ),
+        bottomNavigationBar: const CustomBottomNav(currentItem: NavItem.chat),
       ),
-      bottomNavigationBar: const CustomBottomNav(currentItem: NavItem.chat),
     );
   }
 }
