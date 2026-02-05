@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
 import '../widgets/custom_bottom_nav.dart';
+import '../utils/user_sessions.dart'; // Session utility
 import 'chat_history_screen.dart';
 import 'email_history_screen.dart';
 import 'chat_with_nova_screen.dart';
@@ -10,7 +11,6 @@ class Chat {
   final String sender;
   final String message;
   final String time;
-
   Chat({required this.sender, required this.message, required this.time});
 }
 
@@ -19,14 +19,12 @@ class Email {
   final String sender;
   final String snippet;
   final String time;
-
   Email({required this.subject, required this.sender, required this.snippet, required this.time});
 }
 
 class Meeting {
   final String title;
   final String time;
-
   Meeting({required this.title, required this.time});
 }
 
@@ -40,6 +38,8 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  String _displayName = ""; // Local variable for name
+
   List<Chat> _recentChats = [];
   List<Email> _recentEmails = [];
   List<Meeting> _meetings = [];
@@ -52,18 +52,28 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
+    _displayName = widget.username;
+    _refreshUserData(); // Load real name from storage
     _fetchData();
+  }
+
+  // Session se data refresh karne ke liye
+  Future<void> _refreshUserData() async {
+    final userData = await UserSession.getUserData();
+    if (mounted) {
+      setState(() {
+        _displayName = userData['username']!;
+      });
+    }
   }
 
   void _fetchData() {
     final mockChats = [
       Chat(sender: 'NOVA', message: 'How can I help you today?', time: '10:30 AM'),
     ];
-
     final mockEmails = [
-      Email(subject: 'Team Meeting', sender: 'Project Updates', snippet: 'Review the latest project milestones...', time: '10:55 AM'),
+      Email(subject: 'Team Meeting', sender: 'Project Updates', snippet: 'Review milestones...', time: '10:55 AM'),
     ];
-
     final mockMeetings = [
       Meeting(title: 'Team Standup', time: '9:00 AM - 9:30 AM'),
       Meeting(title: 'Client Presentation', time: '11:00 AM - 12:30 PM'),
@@ -122,7 +132,6 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildHeader() {
-    // ... (This widget remains unchanged)
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -132,7 +141,7 @@ class _HomeScreenState extends State<HomeScreen> {
             const Text("Good Morning", style: TextStyle(color: Colors.white70)),
             const SizedBox(height: 4),
             Text(
-              widget.username,
+              _displayName,
               style: const TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold),
             ),
           ],
@@ -147,8 +156,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildRecentChats(BuildContext context) {
-    // ... (This widget remains unchanged)
-     return Column(
+    return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
@@ -157,7 +165,7 @@ class _HomeScreenState extends State<HomeScreen> {
             const Text("Recent Chats", style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
             GestureDetector(
               onTap: () {
-                Navigator.push(context, MaterialPageRoute(builder: (_) => const ChatHistoryScreen()));
+                Navigator.push(context, MaterialPageRoute(builder: (_) => const ChatHistoryScreen())).then((_) => _refreshUserData());
               },
               child: const Icon(Icons.arrow_forward_ios, color: Colors.white, size: 18),
             ),
@@ -167,7 +175,7 @@ class _HomeScreenState extends State<HomeScreen> {
         if (_recentChats.isNotEmpty)
           GestureDetector(
             onTap: () {
-              Navigator.push(context, MaterialPageRoute(builder: (_) => const ChatWithNovaScreen()));
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const ChatWithNovaScreen())).then((_) => _refreshUserData());
             },
             child: glassCard(
               child: Row(
@@ -199,7 +207,6 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildRecentEmails(BuildContext context) {
-    // ... (This widget remains unchanged)
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -209,7 +216,7 @@ class _HomeScreenState extends State<HomeScreen> {
             const Text("Recent Emails", style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
             GestureDetector(
               onTap: () {
-                Navigator.push(context, MaterialPageRoute(builder: (_) => const EmailHistoryScreen()));
+                Navigator.push(context, MaterialPageRoute(builder: (_) => const EmailHistoryScreen())).then((_) => _refreshUserData());
               },
               child: const Icon(Icons.arrow_forward_ios, color: Colors.white, size: 18),
             ),
@@ -300,7 +307,6 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildAutomationsSection() {
-    // ... (This widget remains unchanged)
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -340,7 +346,6 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildAutomationTile({required String title, required bool value, required ValueChanged<bool> onChanged}) {
-    // ... (This widget remains unchanged)
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4.0),
       child: Row(

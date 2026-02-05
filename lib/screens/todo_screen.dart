@@ -1,12 +1,8 @@
 import 'package:flutter/material.dart';
-
-// --- Data Model for a Task ---
-class Task {
-  final String title;
-  bool isDone;
-
-  Task({required this.title, this.isDone = false});
-}
+import 'package:hive_flutter/hive_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../models/local_task.dart';
+import '../services/task_storage_service.dart';
 
 enum TaskFilter { all, pending, completed }
 
@@ -19,22 +15,23 @@ class TodoScreen extends StatefulWidget {
 
 class _TodoScreenState extends State<TodoScreen> {
   final TextEditingController _searchController = TextEditingController();
+  final TaskStorageService _storageService = TaskStorageService();
   TaskFilter _currentFilter = TaskFilter.all;
-
-  // Master list of tasks
-  final List<Task> _tasks = [
-    Task(title: 'Finalize project report', isDone: true),
-    Task(title: 'Call the design team for a sync-up'),
-    Task(title: 'Review Q4 marketing analytics'),
-    Task(title: 'Submit expense report', isDone: true),
-    Task(title: 'Draft the weekly newsletter'),
-  ];
+  String _currentUserId = '';
 
   @override
   void initState() {
     super.initState();
+    _loadUserId();
     _searchController.addListener(() {
       setState(() {});
+    });
+  }
+
+  void _loadUserId() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _currentUserId = prefs.getString('userId') ?? 'guest_user';
     });
   }
 
@@ -44,39 +41,16 @@ class _TodoScreenState extends State<TodoScreen> {
     super.dispose();
   }
 
-  void _addTask(String title) {
+  // --- LOGIC: Database mein Save ---
+  void _addTask(String title) async {
     if (title.isNotEmpty) {
-      final newTask = Task(title: title);
-      setState(() {
-        _tasks.add(newTask);
-      });
+      // Yahan 'type' todo dena lazmi hai taaki sync logic sahi chale
+      await _storageService.addTask(
+        title: title,
+        type: 'todo', // <--- Ye batana zaroori hai
+        status: 'pending',
+      );
     }
-  }
-
-  List<Task> get _filteredTasks {
-    final query = _searchController.text.toLowerCase();
-    List<Task> filtered = [];
-
-    switch (_currentFilter) {
-      case TaskFilter.pending:
-        filtered = _tasks.where((task) => !task.isDone).toList();
-        break;
-      case TaskFilter.completed:
-        filtered = _tasks.where((task) => task.isDone).toList();
-        break;
-      case TaskFilter.all:
-      default:
-        filtered = List.from(_tasks);
-        break;
-    }
-
-    if (query.isNotEmpty) {
-      filtered = filtered.where((task) {
-        return task.title.toLowerCase().contains(query);
-      }).toList();
-    }
-    
-    return filtered;
   }
 
   @override
@@ -89,6 +63,18 @@ class _TodoScreenState extends State<TodoScreen> {
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text('My Tasks', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        // TodoScreen ke AppBar mein title ke sath ye add karein:
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.sync, color: Colors.white70),
+            onPressed: () {
+              _storageService.syncTasks(); // Manual sync button
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text("Syncing with server...")),
+              );
+            },
+          ),
+        ],
         backgroundColor: const Color(0xFF2B145E),
         elevation: 0,
       ),
@@ -96,43 +82,73 @@ class _TodoScreenState extends State<TodoScreen> {
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            // Search Bar
             _buildSearchBar(),
             const SizedBox(height: 16),
-            // Filter Buttons
             _buildFilterButtons(),
             const SizedBox(height: 16),
-            // Task List
+
+            // --- LOGIC: Hive Se Data Load Karna ---
             Expanded(
-              child: ListView.builder(
-                itemCount: _filteredTasks.length,
-                itemBuilder: (context, index) {
-                  final task = _filteredTasks[index];
-                  return Card(
-                    margin: const EdgeInsets.symmetric(vertical: 8),
-                    color: const Color(0xFF4A1B7B).withOpacity(0.6),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-                    child: ListTile(
-                      title: Text(
-                        task.title,
-                        style: TextStyle(
-                          color: Colors.white,
-                          decoration: task.isDone ? TextDecoration.lineThrough : TextDecoration.none,
-                          decorationColor: Colors.white54,
+              child: ValueListenableBuilder(
+                valueListenable: Hive.box<LocalTask>('tasksBox').listenable(),
+                builder: (context, Box<LocalTask> box, _) {
+
+                  // UserId aur Type 'todo' ke mutabiq filter
+                  List<LocalTask> tasks = box.values.where((t) =>
+                  t.type == 'todo' && t.userId == _currentUserId
+                  ).toList();
+
+                  // Filter Logic (All/Pending/Completed)
+                  if (_currentFilter == TaskFilter.pending) {
+                    tasks = tasks.where((t) => !t.isCompleted).toList();
+                  } else if (_currentFilter == TaskFilter.completed) {
+                    tasks = tasks.where((t) => t.isCompleted).toList();
+                  }
+
+                  // Search Logic
+                  final query = _searchController.text.toLowerCase();
+                  if (query.isNotEmpty) {
+                    tasks = tasks.where((t) => t.title.toLowerCase().contains(query)).toList();
+                  }
+
+                  if (tasks.isEmpty) {
+                    return const Center(child: Text("No tasks found", style: TextStyle(color: Colors.white70)));
+                  }
+
+                  return ListView.builder(
+                    itemCount: tasks.length,
+                    itemBuilder: (context, index) {
+                      final task = tasks[index];
+                      return Card(
+                        margin: const EdgeInsets.symmetric(vertical: 8),
+                        color: const Color(0xFF4A1B7B).withOpacity(0.6),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                        child: ListTile(
+                          title: Text(
+                            task.title,
+                            style: TextStyle(
+                              color: Colors.white,
+                              decoration: task.isCompleted ? TextDecoration.lineThrough : TextDecoration.none,
+                              decorationColor: Colors.white54,
+                            ),
+                          ),
+                          leading: Checkbox(
+                            value: task.isCompleted,
+                            onChanged: (value) {
+                              _storageService.updateTaskStatus(task.id, value! ? 'completed' : 'pending');
+                            },
+                            activeColor: const Color(0xFF9C6BFF),
+                            checkColor: Colors.white,
+                            side: const BorderSide(color: Colors.white70),
+                          ),
+                          // --- DELETE BUTTON ---
+                          trailing: IconButton(
+                            icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
+                            onPressed: () => _storageService.deleteTask(task.id),
+                          ),
                         ),
-                      ),
-                      trailing: Checkbox(
-                        value: task.isDone,
-                        onChanged: (value) {
-                          setState(() {
-                            task.isDone = value!;
-                          });
-                        },
-                        activeColor: const Color(0xFF9C6BFF),
-                        checkColor: Colors.white,
-                        side: const BorderSide(color: Colors.white70),
-                      ),
-                    ),
+                      );
+                    },
                   );
                 },
               ),
@@ -148,6 +164,7 @@ class _TodoScreenState extends State<TodoScreen> {
     );
   }
 
+  // --- UI Widgets wahi hain jo aapne diye thay ---
   Widget _buildSearchBar() {
     return TextField(
       controller: _searchController,
@@ -158,36 +175,21 @@ class _TodoScreenState extends State<TodoScreen> {
         prefixIcon: const Icon(Icons.search, color: Colors.white70),
         filled: true,
         fillColor: const Color(0xFF4A1B7B).withOpacity(0.6),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(30),
-          borderSide: BorderSide.none,
-        ),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(30), borderSide: BorderSide.none),
       ),
     );
   }
 
   Widget _buildFilterButtons() {
     return Container(
-      decoration: BoxDecoration(
-        color: const Color(0xFF4A1B7B).withOpacity(0.6),
-        borderRadius: BorderRadius.circular(30)
-      ),
+      decoration: BoxDecoration(color: const Color(0xFF4A1B7B).withOpacity(0.6), borderRadius: BorderRadius.circular(30)),
       child: ToggleButtons(
-        isSelected: [
-          _currentFilter == TaskFilter.all,
-          _currentFilter == TaskFilter.pending,
-          _currentFilter == TaskFilter.completed,
-        ],
-        onPressed: (index) {
-          setState(() {
-            _currentFilter = TaskFilter.values[index];
-          });
-        },
+        isSelected: [_currentFilter == TaskFilter.all, _currentFilter == TaskFilter.pending, _currentFilter == TaskFilter.completed],
+        onPressed: (index) => setState(() => _currentFilter = TaskFilter.values[index]),
         borderRadius: BorderRadius.circular(30),
         selectedColor: Colors.white,
         color: Colors.white70,
         fillColor: const Color(0xFF9C6BFF),
-        splashColor: const Color(0xFF9C6BFF).withOpacity(0.4),
         borderColor: Colors.transparent,
         selectedBorderColor: Colors.transparent,
         children: const [
@@ -201,52 +203,30 @@ class _TodoScreenState extends State<TodoScreen> {
 
   void _showAddTaskDialog(BuildContext context) {
     final TextEditingController controller = TextEditingController();
-    String? errorText;
-
     showDialog(
       context: context,
-      builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setStateInDialog) {
-            return AlertDialog(
-              backgroundColor: const Color(0xFF4A1B7B),
-              title: const Text('New Task', style: TextStyle(color: Colors.white)),
-              content: TextField(
-                controller: controller,
-                autofocus: true,
-                style: const TextStyle(color: Colors.white),
-                decoration: InputDecoration(
-                  hintText: 'Enter task title',
-                  hintStyle: const TextStyle(color: Colors.white70),
-                  errorText: errorText,
-                  errorStyle: const TextStyle(color: Colors.redAccent),
-                ),
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                  child: const Text('Cancel', style: TextStyle(color: Colors.white70)),
-                ),
-                TextButton(
-                  onPressed: () {
-                    if (controller.text.isEmpty) {
-                      setStateInDialog(() {
-                        errorText = 'Please enter a task title';
-                      });
-                    } else {
-                      _addTask(controller.text);
-                      Navigator.pop(context);
-                    }
-                  },
-                  child: const Text('Add', style: TextStyle(color: Color(0xFF9C6BFF), fontWeight: FontWeight.bold)),
-                ),
-              ],
-            );
-          },
-        );
-      },
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFF4A1B7B),
+        title: const Text('New Task', style: TextStyle(color: Colors.white)),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          style: const TextStyle(color: Colors.white),
+          decoration: const InputDecoration(hintText: 'Enter task title', hintStyle: TextStyle(color: Colors.white70)),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel', style: TextStyle(color: Colors.white70))),
+          TextButton(
+            onPressed: () {
+              if (controller.text.isNotEmpty) {
+                _addTask(controller.text);
+                Navigator.pop(context);
+              }
+            },
+            child: const Text('Add', style: TextStyle(color: Color(0xFF9C6BFF), fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
     );
   }
 }

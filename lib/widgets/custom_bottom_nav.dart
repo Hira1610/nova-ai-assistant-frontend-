@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:nova/screens/tasks_screen.dart';
 import '../screens/home_screen.dart';
 import '../screens/chat_with_nova_screen.dart';
 import '../screens/inbox_screen.dart';
-import '../screens/tasks_screen.dart';
+import '../screens/todo_screen.dart';
 import '../screens/profile_screen.dart';
 
-enum NavItem { home, chat, email, tasks, profile }
+enum NavItem { home, chat, email, tasks, profile,todo }
 
 class CustomBottomNav extends StatelessWidget {
   final NavItem currentItem;
@@ -28,7 +29,8 @@ class CustomBottomNav extends StatelessWidget {
           _buildNavItem(context, NavItem.home, Icons.home_outlined, Icons.home),
           _buildNavItem(context, NavItem.chat, Icons.chat_bubble_outline, Icons.chat_bubble),
           _buildNavItem(context, NavItem.email, Icons.email_outlined, Icons.email),
-          _buildNavItem(context, NavItem.tasks, Icons.check_box_outline_blank, Icons.check_box),
+          _buildNavItem(context, NavItem.todo, Icons.check_box_outline_blank, Icons.check_box),
+          _buildNavItem(context, NavItem.tasks, Icons.notifications_outlined , Icons.notifications),
           _buildNavItem(context, NavItem.profile, Icons.person_outline, Icons.person),
         ],
       ),
@@ -57,11 +59,14 @@ class CustomBottomNav extends StatelessWidget {
           case NavItem.email:
             screen = const InboxScreen();
             break;
-          case NavItem.tasks:
-            screen = const TasksScreen();
+          case NavItem.todo:
+            screen = const TodoScreen();
             break;
           case NavItem.profile:
             screen = const ProfileScreen();
+            break;
+          case NavItem.tasks:
+            screen = const TasksScreen();
             break;
         }
         // Use pushReplacement to avoid building up a large stack of screens
