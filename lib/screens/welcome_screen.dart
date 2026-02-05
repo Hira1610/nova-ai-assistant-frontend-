@@ -1,9 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart'; // ✅ Package import karein
 import '../utils/app_colors.dart';
 import 'login_screen.dart';
 
 class WelcomeScreen extends StatelessWidget {
   const WelcomeScreen({super.key});
+
+  // ✅ Memory mein data save karne ka function
+  Future<void> _completeOnboarding(BuildContext context) async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('isVisited', true); // 'isVisited' ko true set kar diya
+
+    if (context.mounted) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const LoginScreen()),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +38,6 @@ class WelcomeScreen extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // ROBOT - Reverted to original Icon
                 const CircleAvatar(
                   radius: 55,
                   backgroundColor: AppColors.lightPurple,
@@ -34,9 +47,7 @@ class WelcomeScreen extends StatelessWidget {
                     color: AppColors.white,
                   ),
                 ),
-
                 const SizedBox(height: 30),
-
                 const Text(
                   "NOVA",
                   style: TextStyle(
@@ -45,16 +56,12 @@ class WelcomeScreen extends StatelessWidget {
                     color: AppColors.white,
                   ),
                 ),
-
                 const SizedBox(height: 10),
-
                 Text(
                   "Your AI Assistant",
                   style: TextStyle(color: AppColors.white.withOpacity(0.7), fontSize: 16),
                 ),
-
                 const SizedBox(height: 60),
-
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
@@ -65,12 +72,8 @@ class WelcomeScreen extends StatelessWidget {
                         borderRadius: BorderRadius.circular(30),
                       ),
                     ),
-                    onPressed: () {
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(builder: (_) => const LoginScreen()),
-                      );
-                    },
+                    // ✅ Yahan humne function call kiya hai
+                    onPressed: () => _completeOnboarding(context),
                     child: const Text(
                       "Get Started",
                       style: TextStyle(

@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "252086847838",
+    "project_id": "nova-voice-assistant-578bb",
+    "storage_bucket": "nova-voice-assistant-578bb.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:252086847838:android:24bd66699de1a91ccca7cf",
+        "android_client_info": {
+          "package_name": "com.example.nova"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "252086847838-c6m3igntg64kh4jfdnrbv9tsc4vom26v.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.nova",
+            "certificate_hash": "fb98e3b46872c326cae56106ba4cbd2e03a5b4e8"
+          }
+        },
+        {
+          "client_id": "252086847838-5u90bhd5g4a5sba6lvdkg9k05phlnfsu.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCp4_IHUP_AjfECJ6jWMxvfE8m1PwUH_rY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "252086847838-5u90bhd5g4a5sba6lvdkg9k05phlnfsu.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
