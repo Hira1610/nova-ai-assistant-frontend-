@@ -1,6 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import '../widgets/custom_bottom_nav.dart';
+import 'package:nova/widgets/custom_bottom_nav.dart';
 
 // --- Data Model for Email ---
 class EmailItem {
@@ -22,14 +22,6 @@ class EmailItem {
 class InboxScreen extends StatelessWidget {
   const InboxScreen({super.key});
 
-  void _showComposeDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      barrierColor: Colors.black.withOpacity(0.5),
-      builder: (context) => const _ComposeEmailDialog(),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final List<EmailItem> emails = [
@@ -50,17 +42,18 @@ class InboxScreen extends StatelessWidget {
       child: Scaffold(
         backgroundColor: Colors.transparent,
         appBar: AppBar(
-          automaticallyImplyLeading: false,
           title: const Text('Inbox', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.add_circle, color: Colors.white, size: 28),
-              onPressed: () => _showComposeDialog(context),
-            ),
-          ],
           backgroundColor: Colors.transparent,
           elevation: 0,
+          iconTheme: const IconThemeData(color: Colors.white70),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.search, color: Colors.white70),
+              onPressed: () {},
+            ),
+          ],
         ),
+        drawer: _buildInboxDrawer(context),
         body: ListView.builder(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           itemCount: emails.length,
@@ -106,8 +99,62 @@ class InboxScreen extends StatelessWidget {
             );
           },
         ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () => _showComposeDialog(context),
+          backgroundColor: const Color(0xFF9C6BFF),
+          child: const Icon(Icons.edit, color: Colors.white),
+        ),
         bottomNavigationBar: const CustomBottomNav(currentItem: NavItem.email),
       ),
+    );
+  }
+
+  Widget _buildInboxDrawer(BuildContext context) {
+    return Drawer(
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+      child: ClipRRect(
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.black.withOpacity(0.3),
+            ),
+            child: ListView(
+              padding: EdgeInsets.zero,
+              children: [
+                const DrawerHeader(
+                  decoration: BoxDecoration(
+                    border: Border(bottom: BorderSide(color: Colors.white24, width: 0.5)),
+                  ),
+                  child: Text('NOVA Mail', style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
+                ),
+                _buildDrawerItem(icon: Icons.inbox, text: 'Inbox', isSelected: true, onTap: () => Navigator.pop(context)),
+                _buildDrawerItem(icon: Icons.star_border, text: 'Starred', onTap: () => Navigator.pop(context)),
+                _buildDrawerItem(icon: Icons.send_outlined, text: 'Sent', onTap: () => Navigator.pop(context)),
+                const Divider(color: Colors.white24),
+                _buildDrawerItem(icon: Icons.delete_outline, text: 'Trash', onTap: () => Navigator.pop(context)),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDrawerItem({required IconData icon, required String text, VoidCallback? onTap, bool isSelected = false}) {
+    return ListTile(
+      leading: Icon(icon, color: isSelected ? const Color(0xFF9C6BFF) : Colors.white70),
+      title: Text(text, style: TextStyle(color: isSelected ? const Color(0xFF9C6BFF) : Colors.white, fontWeight: isSelected ? FontWeight.bold : FontWeight.normal, fontSize: 16)),
+      onTap: onTap,
+    );
+  }
+
+  void _showComposeDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      barrierColor: Colors.black.withOpacity(0.5),
+      builder: (context) => const _ComposeEmailDialog(),
     );
   }
 }
@@ -143,48 +190,55 @@ class _ComposeEmailDialog extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 24),
-                _buildTextField(hint: 'To'),
+                TextField(
+                  style: const TextStyle(color: Colors.white),
+                  decoration: InputDecoration(hintText: 'To', hintStyle: TextStyle(color: Colors.white.withOpacity(0.7))),
+                ),
                 const SizedBox(height: 16),
-                _buildTextField(hint: 'Subject'),
+                TextField(
+                  style: const TextStyle(color: Colors.white),
+                  decoration: InputDecoration(hintText: 'Subject', hintStyle: TextStyle(color: Colors.white.withOpacity(0.7))),
+                ),
                 const SizedBox(height: 16),
-                _buildTextField(hint: 'Message', maxLines: 5),
+                TextField(
+                  style: const TextStyle(color: Colors.white),
+                  maxLines: 5,
+                  decoration: InputDecoration(hintText: 'Message', hintStyle: TextStyle(color: Colors.white.withOpacity(0.7))),
+                ),
                 const SizedBox(height: 24),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton.icon(
-                    onPressed: () => Navigator.pop(context),
-                    icon: const Icon(Icons.send, color: Colors.white, size: 20),
-                    label: const Text('Send'),
-                    style: ElevatedButton.styleFrom(
-                      foregroundColor: Colors.white,
-                      backgroundColor: const Color(0xFF9C6BFF),
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.attach_file, color: Colors.white70),
+                      onPressed: () {
+                        // Attachment logic here
+                      },
                     ),
-                  ),
+                    IconButton(
+                      icon: const Icon(Icons.schedule, color: Colors.white70),
+                      onPressed: () {
+                        // Schedule send logic here
+                      },
+                    ),
+                    const Spacer(),
+                    ElevatedButton.icon(
+                      onPressed: () => Navigator.pop(context),
+                      icon: const Icon(Icons.send, color: Colors.white, size: 18),
+                      label: const Text('Send'),
+                      style: ElevatedButton.styleFrom(
+                        foregroundColor: Colors.white,
+                        backgroundColor: const Color(0xFF9C6BFF),
+                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildTextField({required String hint, int maxLines = 1}) {
-    return TextField(
-      style: const TextStyle(color: Colors.white),
-      maxLines: maxLines,
-      decoration: InputDecoration(
-        hintText: hint,
-        hintStyle: TextStyle(color: Colors.white.withOpacity(0.7)),
-        filled: true,
-        fillColor: Colors.black.withOpacity(0.2),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(15),
-          borderSide: BorderSide.none,
-        ),
-        contentPadding: const EdgeInsets.all(16),
       ),
     );
   }

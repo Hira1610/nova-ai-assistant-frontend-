@@ -6,7 +6,7 @@ import '../screens/inbox_screen.dart';
 import '../screens/todo_screen.dart';
 import '../screens/profile_screen.dart';
 
-enum NavItem { home, chat, email, tasks, profile,todo }
+enum NavItem { home, chat, email, tasks, profile,todo, meetings }
 
 class CustomBottomNav extends StatelessWidget {
   final NavItem currentItem;
@@ -68,6 +68,9 @@ class CustomBottomNav extends StatelessWidget {
           case NavItem.tasks:
             screen = const TasksScreen();
             break;
+          case NavItem.meetings:
+            // TODO: Handle this case.
+            throw UnimplementedError();
         }
         // Use pushReplacement to avoid building up a large stack of screens
         Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => screen));
