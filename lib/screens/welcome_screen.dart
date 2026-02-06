@@ -58,7 +58,7 @@ class WelcomeScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 10),
                 Text(
-                  "Your AI Assistant",
+                  "Your Intelligent Business Assistant",
                   style: TextStyle(color: AppColors.white.withOpacity(0.7), fontSize: 16),
                 ),
                 const SizedBox(height: 60),
