@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../services/nlp_service.dart';
 import '../services/notification_service.dart';
 import '../widgets/custom_bottom_nav.dart';
 import '../models/local_task.dart';
@@ -14,6 +15,15 @@ class TasksScreen extends StatefulWidget {
 
   @override
   State<TasksScreen> createState() => _TasksScreenState();
+}
+void checkVoiceCommand() {
+  // Direct call karein, instance create karne ki zaroorat nahi
+  String result = NLPService().predictIntent("Light chala do.");
+
+  if (result == "TURN_ON") {
+    // Flashlight On Logic
+  }
+  print(result);
 }
 
 class _TasksScreenState extends State<TasksScreen> {
@@ -310,6 +320,7 @@ class _TasksScreenState extends State<TasksScreen> {
                     width: double.infinity,
                     child: ElevatedButton(
                       onPressed: () async {
+                        checkVoiceCommand();
                         FocusScope.of(context).unfocus();
 
                         if (taskNameController.text.isNotEmpty) {
