@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:nova/services/nlp_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -36,6 +37,8 @@ Future<void> main() async {
 
     // 🔥 Permissions Request
     await NotificationService.requestPermissions();
+    // NLP sevice initialization
+    await NLPService().initModel();
 
     print("NOVA Services Initialized Successfully! ✅");
   } catch (e) {
