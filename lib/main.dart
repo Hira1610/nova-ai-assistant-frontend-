@@ -1,6 +1,8 @@
+import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:nova/services/nlp_service.dart';
+import 'package:nova/services/tts_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -34,12 +36,12 @@ Future<void> main() async {
 
     // Notification Service Initialization
     await NotificationService.init();
-
+    await TTSService().init();
+    await AndroidAlarmManager.initialize();
     // 🔥 Permissions Request
     await NotificationService.requestPermissions();
     // NLP sevice initialization
     await NLPService().initModel();
-
     print("NOVA Services Initialized Successfully! ✅");
   } catch (e) {
     print("Services Init Error: $e");

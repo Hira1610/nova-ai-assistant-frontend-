@@ -5,7 +5,7 @@ publish_to: 'none'
 version: 1.0.0+1
 
 environment:
-  sdk: ^3.10.1
+  sdk: '>=3.10.1 <4.0.0'
 
 dependencies:
   flutter:
@@ -27,7 +27,10 @@ dependencies:
   firebase_core: ^4.3.0
   flutter_timezone: ^5.0.1
   table_calendar: ^3.1.2
-  tflite_flutter: ^0.10.4
+  # Stable version for TFLite
+  tflite_flutter: ^0.11.0
+  flutter_tts: ^4.2.5
+  android_alarm_manager_plus: ^5.0.0
 
 dev_dependencies:
   flutter_test:
@@ -38,7 +41,9 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+
+  # 🔥 Assets ko register karna zaroori hai
   assets:
-#     - assets/images/
-
-
+    - assets/model/intent_model.tflite
+    - assets/model/labels.json
+    - assets/model/tokenizer.json
