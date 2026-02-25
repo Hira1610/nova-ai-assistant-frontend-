@@ -1,3 +1,4 @@
+import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
 import 'package:nova/screens/home_screen.dart';
 import 'package:nova/screens/login_screen.dart';
 import 'package:nova/screens/welcome_screen.dart';
@@ -10,15 +11,20 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:permission_handler/permission_handler.dart';
 
-
 Future<void> main() async {
-  // 1. Flutter Engine Ko Taiyar Karein
   WidgetsFlutterBinding.ensureInitialized();
 
-  // 2. Firebase & Google Sign-In Init
+  // 1. Alarm Manager
+  try {
+    await AndroidAlarmManager.initialize();
+    print("⏰ Alarm Manager Initialized!");
+  } catch (e) {
+    print("❌ Alarm Manager Init Error: $e");
+  }
+
+  // 2. Firebase
   try {
     await Firebase.initializeApp();
-    // Web Client ID configure karein
     await GoogleSignIn.instance.initialize(
       serverClientId: '252086847838-5u90bhd5g4a5sba6lvdkg9k05phlnfsu.apps.googleusercontent.com',
     );
@@ -26,34 +32,23 @@ Future<void> main() async {
     print("Firebase/Google Init Error: $e");
   }
 
-  // 3. Local Services (Hive, Notifications)
+  // 3. Services (Storage, Notifications, NLP)
   try {
-    // Hive Initialization
-    final storageService = TaskStorageService();
-    await storageService.init();
-
-    // Notification Service Initialization
+    await TaskStorageService().init();
     await NotificationService.init();
-
-    // 🔥 Permissions Request
-    await NotificationService.requestPermissions();
-    // NLP sevice initialization
     await NLPService().initModel();
-
-    print("NOVA Services Initialized Successfully! ✅");
+    print("✅ NOVA Services Initialized!");
   } catch (e) {
-    print("Services Init Error: $e");
+    print("❌ Services Init Error: $e");
   }
 
-  // 4. Session & Navigation Logic
+  // 4. Session Logic
   final prefs = await SharedPreferences.getInstance();
-
   bool isVisited = prefs.getBool('isVisited') ?? false;
   bool isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
   String username = prefs.getString('username') ?? "User";
 
   Widget screen;
-
   if (!isVisited) {
     screen = const WelcomeScreen();
   } else if (isLoggedIn) {
@@ -62,54 +57,12 @@ Future<void> main() async {
     screen = const LoginScreen();
   }
 
-  runApp(
-    NovaApp(initialScreen: screen),
-  );
+  runApp(NovaApp(initialScreen: screen));
 }
 
-class NovaApp extends StatefulWidget {
+class NovaApp extends StatelessWidget {
   final Widget initialScreen;
   const NovaApp({super.key, required this.initialScreen});
-
-  @override
-  State<NovaApp> createState() => _NovaAppState();
-}
-
-class _NovaAppState extends State<NovaApp> {
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _checkBatteryOptimizations();
-    });
-  }
-
-  Future<void> _checkBatteryOptimizations() async {
-    var status = await Permission.ignoreBatteryOptimizations.status;
-    if (status.isDenied && mounted) {
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('Important: Enable Notifications'),
-          content: const Text(
-              'For reminders to work correctly, please allow the app to run in the background. Tap \'Open Settings\' and disable battery optimization for NOVA.'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel'),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-                Permission.ignoreBatteryOptimizations.request();
-              },
-              child: const Text('Open Settings'),
-            ),
-          ],
-        ),
-      );
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -121,7 +74,58 @@ class _NovaAppState extends State<NovaApp> {
         brightness: Brightness.dark,
         primarySwatch: Colors.deepPurple,
       ),
-      home: widget.initialScreen,
+      // 🔥 Wrapper use kiya hai taake context ka masla hal ho jaye
+      home: BatteryOptimizationWrapper(child: initialScreen),
     );
   }
+}
+
+// --- Naya Wrapper Widget jo context crash ko bachayega ---
+class BatteryOptimizationWrapper extends StatefulWidget {
+  final Widget child;
+  const BatteryOptimizationWrapper({super.key, required this.child});
+
+  @override
+  State<BatteryOptimizationWrapper> createState() => _BatteryOptimizationWrapperState();
+}
+
+class _BatteryOptimizationWrapperState extends State<BatteryOptimizationWrapper> {
+  @override
+  void initState() {
+    super.initState();
+    // PostFrameCallback zaroori hai taake UI render hone ke baad dialog aaye
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkBatteryOptimizations();
+    });
+  }
+
+  Future<void> _checkBatteryOptimizations() async {
+    var status = await Permission.ignoreBatteryOptimizations.status;
+    if (status.isDenied && mounted) {
+      showDialog(
+        context: context, // Ab ye context MaterialApp ke niche hai (Safe)
+        builder: (context) => AlertDialog(
+          title: const Text('Jarvis Power Mode'),
+          content: const Text(
+              'Reminders aur Voice alerts ke liye NOVA ko background mein chalne ki ijazat dein.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Baad mein'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+                Permission.ignoreBatteryOptimizations.request();
+              },
+              child: const Text('Ijazat Dein'),
+            ),
+          ],
+        ),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.child;
 }
