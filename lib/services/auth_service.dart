@@ -4,7 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthService {
   // final String baseUrl = "http://10.0.2.2:8000/api/v1/auth";
-  final String baseUrl = "http://192.168.100.17:8000/api/v1/auth";
+  final String baseUrl = "http://192.168.100.22:8000/api/v1/auth";
   // --- 1. REGISTER (Same as before) ---
   Future<Map<String, dynamic>> register(String email, String username, String password) async {
     final response = await http.post(

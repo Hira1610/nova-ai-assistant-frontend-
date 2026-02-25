@@ -1,6 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    package="com.example.nova"> <!-- FIX: Package names should be all lowercase -->
+    package="com.example.nova">
 
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.VIBRATE" />
@@ -8,14 +8,14 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
-    <uses-permission android:name="android.permission.USE_EXACT_ALARM"
-        tools:ignore="ExactAlarm" />
+    <uses-permission android:name="android.permission.USE_EXACT_ALARM" tools:ignore="ExactAlarm" />
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 
     <application
         android:name="${applicationName}"
         android:label="Nova"
-        android:icon="@mipmap/app_logo"> <!-- FIX: The path is now correct. -->
+        android:icon="@mipmap/app_logo">
 
         <activity
             android:name=".MainActivity"
@@ -31,34 +31,32 @@
             </intent-filter>
         </activity>
 
-        <receiver android:name="com.dexterous.flutterlocalnotifications.ScheduledNotificationBootReceiver" android:exported="false"
-            tools:ignore="MissingClass">
+        <receiver android:name="com.dexterous.flutterlocalnotifications.ScheduledNotificationBootReceiver" android:exported="false">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED"/>
                 <action android:name="android.intent.action.MY_PACKAGE_REPLACED"/>
                 <action android:name="android.intent.action.QUICKBOOT_POWERON" />
             </intent-filter>
         </receiver>
-
-        <receiver android:name="com.dexterous.flutterlocalnotifications.ScheduledNotificationReceiver" android:exported="false"
-            tools:ignore="MissingClass" />
+        <receiver android:name="com.dexterous.flutterlocalnotifications.ScheduledNotificationReceiver" android:exported="false" />
 
         <service
-            android:name="dev.bebi.android_alarm_manager_plus.AlarmService"
+            android:name="dev.fluttercommunity.plus.android_alarm_manager_plus.AlarmService"
             android:permission="android.permission.BIND_JOB_SERVICE"
             android:exported="false"/>
 
         <receiver
-            android:name="dev.bebi.android_alarm_manager_plus.AlarmReceiver"
+            android:name="dev.fluttercommunity.plus.android_alarm_manager_plus.AlarmReceiver"
             android:exported="false"/>
 
         <receiver
-            android:name="dev.bebi.android_alarm_manager_plus.RebootReceiver"
+            android:name="dev.fluttercommunity.plus.android_alarm_manager_plus.RebootBroadcastReceiver"
             android:exported="false">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED"/>
             </intent-filter>
         </receiver>
+
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
