@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import '../widgets/custom_bottom_nav.dart';
 import '../services/auth_service.dart';
-import '../services/task_storage_service.dart'; // Aapka service import kiya
+import '../services/reminders_storage_service.dart';
 import 'login_screen.dart';
+import '../widgets/custom_bottom_nav.dart'; // FIX: Added import for the bottom nav bar
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -34,21 +34,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
-  // 🔥 1. INTERNET CHECK (Using your TaskStorageService)
   Future<void> _handleLogoutPress(BuildContext context) async {
-    // Aapka banaya hua function use ho raha hai 👇
     bool hasNet = await _storageService.hasInternet();
 
     if (!hasNet) {
-      // Agar net nahi hai -> Warning Dialog
       if (context.mounted) _showNoInternetDialog(context);
     } else {
-      // Agar net hai -> Sync & Logout Dialog
       if (context.mounted) _showSyncAndLogoutDialog(context);
     }
   }
 
-  // 🔥 2. NO INTERNET DIALOG (Warning)
   void _showNoInternetDialog(BuildContext context) {
     showDialog(
       context: context,
@@ -74,7 +69,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           TextButton(
             onPressed: () {
               Navigator.pop(context);
-              _performLogout(context); // Force Logout (Risk)
+              _performLogout(context);
             },
             child: const Text('Force Logout', style: TextStyle(color: Colors.redAccent, fontSize: 12)),
           ),
@@ -83,7 +78,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  // 🔥 3. SYNC & LOGOUT DIALOG
   void _showSyncAndLogoutDialog(BuildContext context) {
     showDialog(
       context: context,
@@ -109,7 +103,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     onPressed: () => Navigator.pop(context),
                     child: const Text('Cancel', style: TextStyle(color: Colors.white70)),
                   ),
-
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: isSyncing ? Colors.grey : Colors.redAccent,
@@ -117,20 +110,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   onPressed: isSyncing
                       ? null
                       : () async {
-                    setDialogState(() => isSyncing = true);
-                    try {
-                      // Aapka banaya hua Sync function 👇
-                      print("🔄 Logout Sync start...");
-                      await _storageService.syncTasks();
-
-                      if (context.mounted) {
-                        await _performLogout(context);
-                      }
-                    } catch (e) {
-                      print("Logout Error: $e");
-                      setDialogState(() => isSyncing = false);
-                    }
-                  },
+                          setDialogState(() => isSyncing = true);
+                          try {
+                            await _storageService.syncTasks();
+                            if (context.mounted) {
+                              await _performLogout(context);
+                            }
+                          } catch (e) {
+                            print("Logout Error: $e");
+                            setDialogState(() => isSyncing = false);
+                          }
+                        },
                   child: isSyncing
                       ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
                       : const Text('Sync & Logout', style: TextStyle(color: Colors.white)),
@@ -143,10 +133,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  // Helper: Asli Logout
   Future<void> _performLogout(BuildContext context) async {
     await _authService.logout();
-    await _storageService.clearAllLocalData(); // Aapka clear data function
+    await _storageService.clearAllLocalData();
     if (context.mounted) {
       Navigator.pushAndRemoveUntil(
         context,
@@ -158,6 +147,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // FIX: Added Container with gradient to restore the theme.
     return Container(
       decoration: const BoxDecoration(
         gradient: LinearGradient(
@@ -189,18 +179,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
               const SizedBox(height: 4),
               Text(_email, style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 16)),
               const SizedBox(height: 30),
-
               _buildProfileOption(context, icon: Icons.account_circle_outlined, title: 'Account Information', onTap: () {}),
               _buildProfileOption(context, icon: Icons.notifications_outlined, title: 'Notifications', onTap: () {}),
               _buildProfileOption(context, icon: Icons.palette_outlined, title: 'Appearance', onTap: () {}),
               _buildProfileOption(context, icon: Icons.help_outline, title: 'Help & Support', onTap: () {}),
               const SizedBox(height: 30),
-
-              // --- LOGOUT BUTTON ---
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton.icon(
-                  onPressed: () => _handleLogoutPress(context), // Logic yahan connect hai
+                  onPressed: () => _handleLogoutPress(context),
                   icon: const Icon(Icons.logout, color: Colors.white),
                   label: const Text('Log Out', style: TextStyle(color: Colors.white, fontSize: 16)),
                   style: ElevatedButton.styleFrom(
@@ -214,6 +201,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ],
           ),
         ),
+        // FIX: Added the bottom navigation bar back to the screen.
         bottomNavigationBar: const CustomBottomNav(currentItem: NavItem.profile),
       ),
     );

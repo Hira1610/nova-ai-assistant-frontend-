@@ -1,6 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:nova/widgets/custom_bottom_nav.dart';
+import '../widgets/custom_bottom_nav.dart'; // FIX: Added import for the bottom nav bar
 
 // --- Data Model for Email ---
 class EmailItem {
@@ -31,6 +31,7 @@ class InboxScreen extends StatelessWidget {
       EmailItem(sender: 'HR Department', subject: 'Benefits Enrollment Reminder', snippet: 'Don\'t forget to complete your benefits enrollment by the end of month...', time: '3 days ago'),
     ];
 
+    // FIX: Added Container with gradient to restore the theme.
     return Container(
       decoration: const BoxDecoration(
         gradient: LinearGradient(
@@ -42,7 +43,8 @@ class InboxScreen extends StatelessWidget {
       child: Scaffold(
         backgroundColor: Colors.transparent,
         appBar: AppBar(
-          title: const Text('Inbox', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+          automaticallyImplyLeading: false, // Ensures no back arrow appears
+          title: const Text('Inbox', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)), // FIX: Corrected title
           backgroundColor: Colors.transparent,
           elevation: 0,
           iconTheme: const IconThemeData(color: Colors.white70),
@@ -104,6 +106,7 @@ class InboxScreen extends StatelessWidget {
           backgroundColor: const Color(0xFF9C6BFF),
           child: const Icon(Icons.edit, color: Colors.white),
         ),
+        // FIX: Added the bottom navigation bar back to the screen.
         bottomNavigationBar: const CustomBottomNav(currentItem: NavItem.email),
       ),
     );
@@ -129,11 +132,11 @@ class InboxScreen extends StatelessWidget {
                   ),
                   child: Text('NOVA Mail', style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
                 ),
-                _buildDrawerItem(icon: Icons.inbox, text: 'Inbox', isSelected: true, onTap: () => Navigator.pop(context)),
-                _buildDrawerItem(icon: Icons.star_border, text: 'Starred', onTap: () => Navigator.pop(context)),
-                _buildDrawerItem(icon: Icons.send_outlined, text: 'Sent', onTap: () => Navigator.pop(context)),
+                _buildDrawerItem(context, icon: Icons.inbox, text: 'Inbox', isSelected: true, onTap: () => Navigator.pop(context)),
+                _buildDrawerItem(context, icon: Icons.star_border, text: 'Starred', onTap: () => Navigator.pop(context)),
+                _buildDrawerItem(context, icon: Icons.send_outlined, text: 'Sent', onTap: () => Navigator.pop(context)),
                 const Divider(color: Colors.white24),
-                _buildDrawerItem(icon: Icons.delete_outline, text: 'Trash', onTap: () => Navigator.pop(context)),
+                _buildDrawerItem(context, icon: Icons.delete_outline, text: 'Trash', onTap: () => Navigator.pop(context)),
               ],
             ),
           ),
@@ -142,7 +145,7 @@ class InboxScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildDrawerItem({required IconData icon, required String text, VoidCallback? onTap, bool isSelected = false}) {
+  Widget _buildDrawerItem(BuildContext context, {required IconData icon, required String text, VoidCallback? onTap, bool isSelected = false}) {
     return ListTile(
       leading: Icon(icon, color: isSelected ? const Color(0xFF9C6BFF) : Colors.white70),
       title: Text(text, style: TextStyle(color: isSelected ? const Color(0xFF9C6BFF) : Colors.white, fontWeight: isSelected ? FontWeight.bold : FontWeight.normal, fontSize: 16)),
@@ -211,15 +214,11 @@ class _ComposeEmailDialog extends StatelessWidget {
                   children: [
                     IconButton(
                       icon: const Icon(Icons.attach_file, color: Colors.white70),
-                      onPressed: () {
-                        // Attachment logic here
-                      },
+                      onPressed: () {},
                     ),
                     IconButton(
                       icon: const Icon(Icons.schedule, color: Colors.white70),
-                      onPressed: () {
-                        // Schedule send logic here
-                      },
+                      onPressed: () {},
                     ),
                     const Spacer(),
                     ElevatedButton.icon(

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:async'; // Needed for Future.delayed
-import '../widgets/loading_robot.dart';
+import '../widgets/loading_robot.dart'; // This is no longer needed
 import '../widgets/custom_bottom_nav.dart';
 
 // --- Data Model for an Email ---
@@ -74,27 +74,28 @@ class _EmailHistoryScreenState extends State<EmailHistoryScreen> {
           elevation: 0,
         ),
         body: _isLoading
-            ? const LoadingRobot()
-            : Column( // Added Column to resolve layout error
-                children: [
-                  Expanded(
-                    child: ListView.separated(
-                      padding: const EdgeInsets.all(16.0),
-                      itemCount: _emails.length,
-                      separatorBuilder: (context, index) => const SizedBox(height: 10),
-                      itemBuilder: (context, index) {
-                        final email = _emails[index];
-                        return ListTile(
-                          leading: const Icon(Icons.email, color: Colors.white),
-                          title: Text(email.subject, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                          subtitle: Text(email.sender, style: const TextStyle(color: Colors.white70)),
-                          trailing: Text(email.time, style: const TextStyle(color: Colors.white54)),
-                        );
-                      },
-                    ),
-                  ),
-                ],
+            // FIX: Replaced the LoadingRobot with your icon_screen.png image.
+            ? Center(child: Image.asset('assets/icon_screen.png', height: 150))
+            : Column(
+          children: [
+            Expanded(
+              child: ListView.separated(
+                padding: const EdgeInsets.all(16.0),
+                itemCount: _emails.length,
+                separatorBuilder: (context, index) => const SizedBox(height: 10),
+                itemBuilder: (context, index) {
+                  final email = _emails[index];
+                  return ListTile(
+                    leading: const Icon(Icons.email, color: Colors.white),
+                    title: Text(email.subject, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                    subtitle: Text(email.sender, style: const TextStyle(color: Colors.white70)),
+                    trailing: Text(email.time, style: const TextStyle(color: Colors.white54)),
+                  );
+                },
               ),
+            ),
+          ],
+        ),
         bottomNavigationBar: const CustomBottomNav(currentItem: NavItem.email),
       ),
     );

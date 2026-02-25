@@ -6,7 +6,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 
 import '../services/auth_service.dart';
 import '../utils/app_colors.dart';
-import 'home_screen.dart';
+import 'home_screen.dart'; // REVERTED: Go back to HomeScreen
 import 'sign_in_screen.dart';
 import 'otp_screen.dart';
 
@@ -23,7 +23,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
   final AuthService _authService = AuthService();
 
-  // Singleton instance use karein
   final GoogleSignIn _googleSignIn = GoogleSignIn.instance;
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
 
@@ -32,7 +31,6 @@ class _LoginScreenState extends State<LoginScreen> {
   String? _passwordError;
   bool _isPasswordVisible = false;
 
-  // ================= EMAIL LOGIN (NO CHANGE) =================
   void _validateAndLogin() async {
     setState(() {
       _emailError = null;
@@ -62,11 +60,10 @@ class _LoginScreenState extends State<LoginScreen> {
 
         if (res['status'] == 'success') {
           if (mounted) {
-            String username = _emailController.text.split('@')[0];
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(
-                builder: (context) => HomeScreen(username: res['username'] ?? "User"),
+                builder: (context) => const HomeScreen(username: 'User'), // REVERTED to old navigation
               ),
             );
           }
@@ -97,15 +94,12 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  // ================= GOOGLE LOGIN =================
-// ================= GOOGLE LOGIN (EXACTLY SAME AS REGISTER) =================
   void _handleGoogleSignIn() async {
     try {
       if (mounted) setState(() => _isLoading = true);
 
       final GoogleSignIn googleSignIn = GoogleSignIn.instance;
-
-      // 🔥 Using authenticate() as per your request
+      
       final GoogleSignInAccount? googleUser = await googleSignIn.authenticate();
 
       if (googleUser == null) {
@@ -118,7 +112,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
       if (idToken == null) throw "Google ID Token generation failed.";
 
-      // Backend API Call (Same service method used in Register)
       final res = await _authService.googleLogin(idToken);
 
       if (!mounted) return;
@@ -128,14 +121,10 @@ class _LoginScreenState extends State<LoginScreen> {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (context) => HomeScreen(
-              username: res['username'] ?? googleUser.displayName ?? "User",
-            ),
+            builder: (context) => const HomeScreen(username: 'User'), // REVERTED to old navigation
           ),
         );
       } else {
-        // ⚠️ Agar yahan error aye, to iska matlab backend naye user ko
-        // login route par allow nahi kar raha.
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
               content: Text(res['detail'] ?? "API Login Failed"),
@@ -153,7 +142,7 @@ class _LoginScreenState extends State<LoginScreen> {
       }
     }
   }
-  // ================= GOOGLE CONFIRM DIALOG =================
+  
   void _showGoogleSignInDialog() {
     showDialog(
       context: context,
@@ -193,7 +182,6 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  // ================= UI (NO CHANGE) =================
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -254,7 +242,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           color: Colors.white70,
                         ),
                         onPressed: () => setState(
-                          () => _isPasswordVisible = !_isPasswordVisible,
+                              () => _isPasswordVisible = !_isPasswordVisible,
                         ),
                       ),
                     ),
@@ -272,16 +260,16 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         child: _isLoading
                             ? const CircularProgressIndicator(
-                                color: Colors.white,
-                              )
+                          color: Colors.white,
+                        )
                             : const Text(
-                                "Login",
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
+                          "Login",
+                          style: TextStyle(
+                            fontSize: 18,
+                            color: Colors.white,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                       ),
                     ),
                     const SizedBox(height: 20),

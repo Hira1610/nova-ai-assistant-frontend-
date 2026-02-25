@@ -146,10 +146,11 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ],
         ),
+        // FIX: Replaced the robot icon with your image.
         const CircleAvatar(
           radius: 22,
-          backgroundColor: Color(0xFF9C6BFF),
-          child: Icon(Icons.smart_toy, color: Colors.white),
+          backgroundImage: AssetImage('assets/icon_screen.png'),
+          backgroundColor: Colors.transparent, 
         ),
       ],
     );
@@ -257,7 +258,7 @@ class _HomeScreenState extends State<HomeScreen> {
           children: const [
             Icon(Icons.calendar_today, color: Colors.white, size: 20),
             SizedBox(width: 8),
-            Text("Today\'s Meetings", style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+            Text("Today's Meetings", style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
           ],
         ),
         const SizedBox(height: 10),
@@ -346,21 +347,16 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildAutomationTile({required String title, required bool value, required ValueChanged<bool> onChanged}) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(title, style: const TextStyle(color: Colors.white, fontSize: 16)),
-          Switch(
-            value: value,
-            onChanged: onChanged,
-            activeColor: Colors.white,
-            activeTrackColor: const Color(0xFF7C3AED),
-            inactiveThumbColor: Colors.grey.shade300,
-            inactiveTrackColor: Colors.grey.withOpacity(0.3),
-          ),
-        ],
+    return ListTile(
+      contentPadding: EdgeInsets.zero,
+      title: Text(title, style: const TextStyle(color: Colors.white, fontSize: 16)),
+      trailing: Switch(
+        value: value,
+        onChanged: onChanged,
+        activeColor: Colors.white,
+        activeTrackColor: const Color(0xFF7C3AED),
+        inactiveThumbColor: Colors.grey.shade300,
+        inactiveTrackColor: Colors.grey.withOpacity(0.3),
       ),
     );
   }
