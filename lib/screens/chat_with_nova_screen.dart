@@ -33,7 +33,14 @@ class _ChatWithNovaScreenState extends State<ChatWithNovaScreen> {
       child: Scaffold(
         backgroundColor: Colors.transparent,
         appBar: AppBar(
-          title: const Text('Let\'s Chat', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+          title: Row(
+            children: [
+              // FIX: Increased the height of your image, as you requested.
+              Image.asset('assets/icon_screen.png', height: 40),
+              const SizedBox(width: 12),
+              const Text('Let\'s Chat', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            ],
+          ),
           backgroundColor: Colors.transparent,
           elevation: 0,
           iconTheme: const IconThemeData(color: Colors.white70), // Sets drawer icon color

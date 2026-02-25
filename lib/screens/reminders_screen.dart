@@ -6,71 +6,18 @@ import '../services/nlp_service.dart';
 import '../services/notification_service.dart';
 import '../widgets/custom_bottom_nav.dart';
 import '../models/local_task.dart';
-import '../services/task_storage_service.dart';
+import '../services/reminders_storage_service.dart';
 
 enum TaskFilter { all, pending, completed }
 
-class TasksScreen extends StatefulWidget {
-  const TasksScreen({super.key});
+class RemindersScreen extends StatefulWidget {
+  const RemindersScreen({super.key});
 
   @override
-  State<TasksScreen> createState() => _TasksScreenState();
-}
-Future<void> checkVoiceCommand(String userInput) async {
-  final nlp = NLPService();
-
-  // 1. Model Loading Check (Wait if not ready)
-  if (!nlp.isReady) {
-    print("⏳ NOVA Engine is starting...");
-    await nlp.initModel();
-  }
-
-  // 2. Prediction (Pure Logic)
-  // Note: userInput ko parameter se lena behtar hai bajaye "Light jala do" hardcode karne ke
-  String result = nlp.predictIntent(userInput);
-
-  print("🧠 JARVIS NLP Output: [$result] for Input: [$userInput]");
-
-  // 3. Action Logic (Switch Case is better for many intents)
-  switch (result) {
-    case "TURN_ON":
-      _handleFlashlight(true);
-      break;
-
-    case "TURN_OFF":
-      _handleFlashlight(false);
-      break;
-
-    case "ADD_TASK":
-      print("📝 Logic: Opening Task Creator...");
-      // TaskStorageService().addTask(...);
-      break;
-
-    case "uncertain":
-      print("🤔 NOVA: Sir, mujhe samajh nahi aaya. Dobara kahiye?");
-      // TTSService.speak("Sorry sir, I didn't quite catch that.");
-      break;
-
-    case "loading":
-    case "error":
-      print("⚠️ NLP System is having trouble.");
-      break;
-
-    default:
-      print("ℹ️ Intent recognized but no logic defined for: $result");
-  }
+  State<RemindersScreen> createState() => _RemindersScreenState();
 }
 
-// Helper function for clean code
-void _handleFlashlight(bool turnOn) {
-  if (turnOn) {
-    print("🔦 Flashlight ON trigger!");
-    // TorchController().toggle();
-  } else {
-    print("🌑 Flashlight OFF trigger!");
-  }
-}
-class _TasksScreenState extends State<TasksScreen> {
+class _RemindersScreenState extends State<RemindersScreen> {
   TaskFilter _currentFilter = TaskFilter.all;
   final TaskStorageService _storageService = TaskStorageService();
   String _currentUserId = '';
@@ -83,9 +30,19 @@ class _TasksScreenState extends State<TasksScreen> {
 
   Future<void> _loadUser() async {
     final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      _currentUserId = prefs.getString('userId') ?? '';
-    });
+    if (mounted) {
+      setState(() {
+        _currentUserId = prefs.getString('userId') ?? '';
+      });
+    }
+  }
+  
+  void _checkVoiceCommand() {
+    String result = NLPService().predictIntent("Light chala do.");
+    if (result == "TURN_ON") {
+      // Flashlight On Logic
+    }
+    print(result);
   }
 
   @override
@@ -122,7 +79,6 @@ class _TasksScreenState extends State<TasksScreen> {
           backgroundColor: Colors.transparent,
           elevation: 0,
         ),
-        // 🔥 FIX: FutureBuilder ensures the box is open before UI tries to read it
         body: FutureBuilder(
           future: Hive.openBox<LocalTask>('tasksBox'),
           builder: (context, snapshot) {
@@ -133,12 +89,11 @@ class _TasksScreenState extends State<TasksScreen> {
             }
           },
         ),
-        bottomNavigationBar: const CustomBottomNav(currentItem: NavItem.tasks),
+        bottomNavigationBar: const CustomBottomNav(currentItem: NavItem.reminders),
       ),
     );
   }
 
-  // Separate function for the main body logic
   Widget _buildTaskContent() {
     return Column(
       children: [
@@ -148,14 +103,16 @@ class _TasksScreenState extends State<TasksScreen> {
           child: ValueListenableBuilder(
             valueListenable: Hive.box<LocalTask>('tasksBox').listenable(),
             builder: (context, Box<LocalTask> box, _) {
-              List<LocalTask> tasks = box.values.where((t) =>
-              t.userId == _currentUserId && t.type == 'reminder'
+
+              List<LocalTask> allUserReminders = box.values.where((t) =>
+                t.userId == _currentUserId && t.type == 'reminder'
               ).toList();
 
-              if (_currentFilter == TaskFilter.pending) {
-                tasks = tasks.where((t) => !t.isCompleted).toList();
-              } else if (_currentFilter == TaskFilter.completed) {
-                tasks = tasks.where((t) => t.isCompleted).toList();
+              List<LocalTask> tasks;
+              if (_currentFilter == TaskFilter.completed) {
+                tasks = allUserReminders.where((t) => t.isCompleted).toList();
+              } else { 
+                tasks = allUserReminders.where((t) => !t.isCompleted).toList();
               }
 
               if (tasks.isEmpty) {
@@ -181,7 +138,16 @@ class _TasksScreenState extends State<TasksScreen> {
                       title: Row(
                         children: [
                           Expanded(
-                            child: Text(task.title, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+                            child: Text(task.title, 
+                              style: TextStyle(
+                                color: Colors.white, 
+                                fontWeight: FontWeight.bold, 
+                                fontSize: 16,
+                                decoration: task.isCompleted ? TextDecoration.lineThrough : TextDecoration.none,
+                                decorationColor: Colors.white70,
+                                decorationThickness: 2,
+                              )
+                            ),
                           ),
                           if (task.isSynced)
                             const Icon(Icons.cloud_done, color: Colors.greenAccent, size: 16),
@@ -364,13 +330,12 @@ class _TasksScreenState extends State<TasksScreen> {
                     width: double.infinity,
                     child: ElevatedButton(
                       onPressed: () async {
-                        await  checkVoiceCommand("USman ko call kr");
+                        _checkVoiceCommand();
                         FocusScope.of(context).unfocus();
 
                         if (taskNameController.text.isNotEmpty) {
                           String pString = selectedPriority == Colors.red ? 'red' : (selectedPriority == Colors.orange ? 'orange' : 'green');
 
-                          // 🔥 TaskStorageService already handles all notification logic internally!
                           await _storageService.addTask(
                             title: taskNameController.text,
                             type: 'reminder',

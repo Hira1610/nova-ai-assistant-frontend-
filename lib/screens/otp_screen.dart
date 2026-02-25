@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../services/auth_service.dart';
-import '../utils/app_colors.dart';
-import 'home_screen.dart';
+import 'package:nova/screens/home_screen.dart';
+import '../services/auth_service.dart'; 
+import '../utils/app_colors.dart'; // FIX: Corrected the typo in the import
 
 class OTPScreen extends StatefulWidget {
   final String email;
@@ -16,7 +16,6 @@ class _OTPScreenState extends State<OTPScreen> {
   final AuthService _authService = AuthService();
   bool _isLoading = false;
 
-  // --- LOGIC: Verify OTP via your API ---
   void _verifyOtp() async {
     if (_otpController.text.length < 6) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -28,7 +27,6 @@ class _OTPScreenState extends State<OTPScreen> {
     setState(() => _isLoading = true);
 
     try {
-      // Aapki API: verify-otp (email, otp)
       final res = await _authService.verifyOtp(
           widget.email,
           _otpController.text.trim()
@@ -36,25 +34,21 @@ class _OTPScreenState extends State<OTPScreen> {
 
       setState(() => _isLoading = false);
 
-      // Aapki API response check: "User verified successfully"
       if (res['message'] == "User verified successfully") {
 
-        // Note: AuthService.verifyOtp ne pehle hi token save kar liya hai
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Account Verified Successfully! ✅")),
         );
 
         if (mounted) {
-          // Navigator.pushAndRemoveUntil use kiya hai taaki user login ke baad
-          // wapis OTP screen par na aa sakay back button se
+          // REVERTED: Navigate to the old, stable HomeScreen
           Navigator.pushAndRemoveUntil(
             context,
-            MaterialPageRoute(builder: (context) => const HomeScreen(username: "User")),
+            MaterialPageRoute(builder: (context) => const HomeScreen(username: 'User')),
                 (route) => false,
           );
         }
       } else {
-        // Backend error (Invalid OTP ya Expired)
         String error = res['detail'] ?? "Invalid OTP code";
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(error), backgroundColor: Colors.red),

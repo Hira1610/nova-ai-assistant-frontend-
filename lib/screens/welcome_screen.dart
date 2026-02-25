@@ -1,15 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart'; // ✅ Package import karein
+import 'package:shared_preferences/shared_preferences.dart';
 import '../utils/app_colors.dart';
 import 'login_screen.dart';
 
 class WelcomeScreen extends StatelessWidget {
   const WelcomeScreen({super.key});
 
-  // ✅ Memory mein data save karne ka function
   Future<void> _completeOnboarding(BuildContext context) async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('isVisited', true); // 'isVisited' ko true set kar diya
+    await prefs.setBool('isVisited', true);
 
     if (context.mounted) {
       Navigator.pushReplacement(
@@ -38,14 +37,9 @@ class WelcomeScreen extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const CircleAvatar(
-                  radius: 55,
-                  backgroundColor: AppColors.lightPurple,
-                  child: Icon(
-                    Icons.smart_toy,
-                    size: 60,
-                    color: AppColors.white,
-                  ),
+                Image.asset(
+                  'assets/icon_screen.png',
+                  height: 150,
                 ),
                 const SizedBox(height: 30),
                 const Text(
@@ -72,7 +66,6 @@ class WelcomeScreen extends StatelessWidget {
                         borderRadius: BorderRadius.circular(30),
                       ),
                     ),
-                    // ✅ Yahan humne function call kiya hai
                     onPressed: () => _completeOnboarding(context),
                     child: const Text(
                       "Get Started",
