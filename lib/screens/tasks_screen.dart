@@ -16,16 +16,60 @@ class TasksScreen extends StatefulWidget {
   @override
   State<TasksScreen> createState() => _TasksScreenState();
 }
-void checkVoiceCommand() {
-  // Direct call karein, instance create karne ki zaroorat nahi
-  String result = NLPService().predictIntent("Light chala do.");
+Future<void> checkVoiceCommand(String userInput) async {
+  final nlp = NLPService();
 
-  if (result == "TURN_ON") {
-    // Flashlight On Logic
+  // 1. Model Loading Check (Wait if not ready)
+  if (!nlp.isReady) {
+    print("⏳ NOVA Engine is starting...");
+    await nlp.initModel();
   }
-  print(result);
+
+  // 2. Prediction (Pure Logic)
+  // Note: userInput ko parameter se lena behtar hai bajaye "Light jala do" hardcode karne ke
+  String result = nlp.predictIntent(userInput);
+
+  print("🧠 JARVIS NLP Output: [$result] for Input: [$userInput]");
+
+  // 3. Action Logic (Switch Case is better for many intents)
+  switch (result) {
+    case "TURN_ON":
+      _handleFlashlight(true);
+      break;
+
+    case "TURN_OFF":
+      _handleFlashlight(false);
+      break;
+
+    case "ADD_TASK":
+      print("📝 Logic: Opening Task Creator...");
+      // TaskStorageService().addTask(...);
+      break;
+
+    case "uncertain":
+      print("🤔 NOVA: Sir, mujhe samajh nahi aaya. Dobara kahiye?");
+      // TTSService.speak("Sorry sir, I didn't quite catch that.");
+      break;
+
+    case "loading":
+    case "error":
+      print("⚠️ NLP System is having trouble.");
+      break;
+
+    default:
+      print("ℹ️ Intent recognized but no logic defined for: $result");
+  }
 }
 
+// Helper function for clean code
+void _handleFlashlight(bool turnOn) {
+  if (turnOn) {
+    print("🔦 Flashlight ON trigger!");
+    // TorchController().toggle();
+  } else {
+    print("🌑 Flashlight OFF trigger!");
+  }
+}
 class _TasksScreenState extends State<TasksScreen> {
   TaskFilter _currentFilter = TaskFilter.all;
   final TaskStorageService _storageService = TaskStorageService();
@@ -320,7 +364,7 @@ class _TasksScreenState extends State<TasksScreen> {
                     width: double.infinity,
                     child: ElevatedButton(
                       onPressed: () async {
-                        checkVoiceCommand();
+                        await  checkVoiceCommand("USman ko call kr");
                         FocusScope.of(context).unfocus();
 
                         if (taskNameController.text.isNotEmpty) {
