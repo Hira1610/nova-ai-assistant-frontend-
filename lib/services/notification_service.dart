@@ -133,13 +133,22 @@ class NotificationService {
     );
     await TTSService().speak("Reminder: $title");
   }
-
   static Future<void> requestPermissions() async {
     if (!Platform.isAndroid) return;
-    await Permission.notification.request();
-    await _notificationsPlugin
-        .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
-        ?.requestExactAlarmsPermission();
-    await Permission.ignoreBatteryOptimizations.request();
+
+    if (await Permission.notification.isDenied) {
+      await Permission.notification.request();
+    }
+
+    final androidPlugin = _notificationsPlugin
+        .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
+
+    if (androidPlugin != null) {
+      await androidPlugin.requestExactAlarmsPermission();
+    }
+
+    if (await Permission.ignoreBatteryOptimizations.isDenied) {
+      await Permission.ignoreBatteryOptimizations.request();
+    }
   }
 }

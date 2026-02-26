@@ -14,28 +14,31 @@ import 'package:permission_handler/permission_handler.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // 1. Alarm Manager
+  // 1. Alarm Manager Initialize
   try {
     await AndroidAlarmManager.initialize();
-    print("⏰ Alarm Manager Initialized!");
   } catch (e) {
-    print("❌ Alarm Manager Init Error: $e");
+    print("❌ Alarm Manager Error: $e");
   }
 
-  // 2. Firebase
+  // 2. Firebase & Google Init
   try {
     await Firebase.initializeApp();
     await GoogleSignIn.instance.initialize(
       serverClientId: '252086847838-5u90bhd5g4a5sba6lvdkg9k05phlnfsu.apps.googleusercontent.com',
     );
   } catch (e) {
-    print("Firebase/Google Init Error: $e");
+    print("Firebase Error: $e");
   }
 
-  // 3. Services (Storage, Notifications, NLP)
+  // 3. Services (Storage, NLP, Notifications)
   try {
     await TaskStorageService().init();
+
+
+
     await NotificationService.init();
+    await NotificationService.requestPermissions();
     await NLPService().initModel();
     print("✅ NOVA Services Initialized!");
   } catch (e) {
@@ -74,58 +77,7 @@ class NovaApp extends StatelessWidget {
         brightness: Brightness.dark,
         primarySwatch: Colors.deepPurple,
       ),
-      // 🔥 Wrapper use kiya hai taake context ka masla hal ho jaye
-      home: BatteryOptimizationWrapper(child: initialScreen),
+      home: initialScreen, // 👈 Battery Wrapper hata diya, ab seedha screen load hogi
     );
   }
-}
-
-// --- Naya Wrapper Widget jo context crash ko bachayega ---
-class BatteryOptimizationWrapper extends StatefulWidget {
-  final Widget child;
-  const BatteryOptimizationWrapper({super.key, required this.child});
-
-  @override
-  State<BatteryOptimizationWrapper> createState() => _BatteryOptimizationWrapperState();
-}
-
-class _BatteryOptimizationWrapperState extends State<BatteryOptimizationWrapper> {
-  @override
-  void initState() {
-    super.initState();
-    // PostFrameCallback zaroori hai taake UI render hone ke baad dialog aaye
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _checkBatteryOptimizations();
-    });
-  }
-
-  Future<void> _checkBatteryOptimizations() async {
-    var status = await Permission.ignoreBatteryOptimizations.status;
-    if (status.isDenied && mounted) {
-      showDialog(
-        context: context, // Ab ye context MaterialApp ke niche hai (Safe)
-        builder: (context) => AlertDialog(
-          title: const Text('Jarvis Power Mode'),
-          content: const Text(
-              'Reminders aur Voice alerts ke liye NOVA ko background mein chalne ki ijazat dein.'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Baad mein'),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-                Permission.ignoreBatteryOptimizations.request();
-              },
-              child: const Text('Ijazat Dein'),
-            ),
-          ],
-        ),
-      );
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) => widget.child;
 }
