@@ -36,8 +36,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
       });
     }
   }
-  
-  void _checkVoiceCommand() {
+void _checkVoiceCommand() {
     String result = NLPService().predictIntent("Light chala do.");
     if (result == "TURN_ON") {
       // Flashlight On Logic
@@ -330,7 +329,6 @@ class _RemindersScreenState extends State<RemindersScreen> {
                     width: double.infinity,
                     child: ElevatedButton(
                       onPressed: () async {
-                        _checkVoiceCommand();
                         FocusScope.of(context).unfocus();
 
                         if (taskNameController.text.isNotEmpty) {

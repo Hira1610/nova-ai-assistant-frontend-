@@ -49,4 +49,7 @@ flutter:
     - assets/icon_screen.png
     - assets/models/urdu_intent_model.tflite
     - assets/models/labels.txt
+#    - assets/model/intent_model.tflite
+#    - assets/model/labels.json
+#    - assets/model/tokenizer.json
     - assets/models/dictionary.json
