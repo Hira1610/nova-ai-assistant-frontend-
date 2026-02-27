@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'package:intl/intl.dart';
+import '../models/local_task.dart';
 import '../widgets/custom_bottom_nav.dart';
-import '../utils/user_sessions.dart'; // Session utility
+import '../utils/user_sessions.dart';
 import 'chat_history_screen.dart';
 import 'email_history_screen.dart';
 import 'chat_with_nova_screen.dart';
+import 'schedule_screen.dart';
 
-// --- Data Models ---
+// --- Data Models (for mock data) ---
 class Chat {
   final String sender;
   final String message;
@@ -22,12 +26,6 @@ class Email {
   Email({required this.subject, required this.sender, required this.snippet, required this.time});
 }
 
-class Meeting {
-  final String title;
-  final String time;
-  Meeting({required this.title, required this.time});
-}
-
 // --- Home Screen ---
 class HomeScreen extends StatefulWidget {
   final String username;
@@ -38,11 +36,11 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  String _displayName = ""; // Local variable for name
+  String _displayName = "";
 
+  // State for mock data
   List<Chat> _recentChats = [];
   List<Email> _recentEmails = [];
-  List<Meeting> _meetings = [];
 
   // State for the automation toggles
   bool _autoReplyEnabled = true;
@@ -53,11 +51,10 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     _displayName = widget.username;
-    _refreshUserData(); // Load real name from storage
-    _fetchData();
+    _refreshUserData();
+    _fetchMockData(); // FIX: Renamed to clarify it only fetches mock data now
   }
 
-  // Session se data refresh karne ke liye
   Future<void> _refreshUserData() async {
     final userData = await UserSession.getUserData();
     if (mounted) {
@@ -67,23 +64,34 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  void _fetchData() {
+  // FIX: This now only loads mock data for chats and emails.
+  void _fetchMockData() {
     final mockChats = [
       Chat(sender: 'NOVA', message: 'How can I help you today?', time: '10:30 AM'),
     ];
     final mockEmails = [
       Email(subject: 'Team Meeting', sender: 'Project Updates', snippet: 'Review milestones...', time: '10:55 AM'),
     ];
-    final mockMeetings = [
-      Meeting(title: 'Team Standup', time: '9:00 AM - 9:30 AM'),
-      Meeting(title: 'Client Presentation', time: '11:00 AM - 12:30 PM'),
-    ];
 
     setState(() {
       _recentChats = mockChats;
       _recentEmails = mockEmails;
-      _meetings = mockMeetings;
     });
+  }
+
+  // FIX: This function now gets REAL meeting data from your database.
+  List<LocalTask> _getTodaysMeetings(Box<LocalTask> box) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final tomorrow = DateTime(now.year, now.month, now.day + 1);
+
+    return box.values.where((task) {
+      return task.type == 'meeting' &&
+          !task.isCompleted &&
+          task.remindAt != null &&
+          task.remindAt!.isAfter(today) &&
+          task.remindAt!.isBefore(tomorrow);
+    }).toList()..sort((a, b) => a.remindAt!.compareTo(b.remindAt!));
   }
 
   @override
@@ -107,19 +115,27 @@ class _HomeScreenState extends State<HomeScreen> {
                 _buildHeader(),
                 const SizedBox(height: 25),
                 Expanded(
-                  child: SingleChildScrollView(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _buildRecentChats(context),
-                        const SizedBox(height: 25),
-                        _buildRecentEmails(context),
-                        const SizedBox(height: 25),
-                        _buildMeetingsSection(context),
-                        const SizedBox(height: 25),
-                        _buildAutomationsSection(),
-                      ],
-                    ),
+                  // FIX: Added ValueListenableBuilder to get live updates from the database
+                  child: ValueListenableBuilder<Box<LocalTask>>(
+                    valueListenable: Hive.box<LocalTask>('tasksBox').listenable(),
+                    builder: (context, box, _) {
+                      final todaysMeetings = _getTodaysMeetings(box);
+                      return SingleChildScrollView(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _buildRecentChats(context),
+                            const SizedBox(height: 25),
+                            _buildRecentEmails(context),
+                            const SizedBox(height: 25),
+                            // FIX: Passing the real meeting data to the widget
+                            _buildMeetingsSection(context, todaysMeetings),
+                            const SizedBox(height: 25),
+                            _buildAutomationsSection(),
+                          ],
+                        ),
+                      );
+                    },
                   ),
                 ),
               ],
@@ -146,11 +162,10 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ],
         ),
-        // FIX: Replaced the robot icon with your image.
         const CircleAvatar(
           radius: 22,
           backgroundImage: AssetImage('assets/icon_screen.png'),
-          backgroundColor: Colors.transparent, 
+          backgroundColor: Colors.transparent,
         ),
       ],
     );
@@ -250,57 +265,56 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildMeetingsSection(BuildContext context) {
+  // FIX: This widget now takes a list of LocalTask objects.
+  Widget _buildMeetingsSection(BuildContext context, List<LocalTask> meetings) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
-          children: const [
-            Icon(Icons.calendar_today, color: Colors.white, size: 20),
-            SizedBox(width: 8),
-            Text("Today's Meetings", style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+          children: [
+            const Icon(Icons.calendar_today, color: Colors.white, size: 20),
+            const SizedBox(width: 8),
+            const Text("Today's Meetings", style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+            const Spacer(),
+            GestureDetector(
+              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ScheduleScreen())),
+              child: const Icon(Icons.arrow_forward_ios, color: Colors.white, size: 18),
+            ),
           ],
         ),
         const SizedBox(height: 10),
         glassCard(
-          child: Column(
-            children: _meetings.asMap().entries.map((entry) {
-              int idx = entry.key;
-              Meeting meeting = entry.value;
-              return Column(
-                children: [
-                  _buildMeetingTile(meeting),
-                  if (idx < _meetings.length - 1) const Divider(color: Colors.white24, height: 1),
-                ],
-              );
-            }).toList(),
+          child: meetings.isEmpty
+              ? const Center(child: Text("No meetings scheduled for today.", style: TextStyle(color: Colors.white70)))
+              : ListView.separated(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: meetings.length,
+            separatorBuilder: (_, __) => const Divider(color: Colors.white24, height: 1),
+            itemBuilder: (_, index) => _buildMeetingTile(meetings[index]),
           ),
         ),
       ],
     );
   }
 
-  Widget _buildMeetingTile(Meeting meeting) {
+  // FIX: This widget now takes a LocalTask object.
+  Widget _buildMeetingTile(LocalTask meeting) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(meeting.title, style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 4),
-              Text(meeting.time, style: const TextStyle(color: Colors.white70)),
-            ],
-          ),
-          IconButton(
-            icon: const Icon(Icons.notifications_active_outlined, color: Colors.white),
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Reminder set for ${meeting.title}')),
-              );
-            },
+          const Icon(Icons.calendar_today_outlined, color: Colors.white, size: 20),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(meeting.title, style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 4),
+                Text(DateFormat('hh:mm a').format(meeting.remindAt!), style: const TextStyle(color: Colors.white70)),
+              ],
+            ),
           ),
         ],
       ),

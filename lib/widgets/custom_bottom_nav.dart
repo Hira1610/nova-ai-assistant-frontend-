@@ -3,11 +3,11 @@ import 'package:nova/screens/home_screen.dart';
 import 'package:nova/screens/chat_with_nova_screen.dart';
 import 'package:nova/screens/email_screen.dart';
 import 'package:nova/screens/reminders_screen.dart';
-import 'package:nova/screens/meetings_screen.dart';
+import 'package:nova/screens/schedule_screen.dart';
 import 'package:nova/screens/profile_screen.dart';
 
 // REVERTED: The NavItem enum is back to its original state.
-enum NavItem { home, chat, email, reminders, meetings, profile }
+enum NavItem { home, chat, email, reminders, schedule, profile }
 
 class CustomBottomNav extends StatelessWidget {
   final NavItem? currentItem;
@@ -32,7 +32,7 @@ class CustomBottomNav extends StatelessWidget {
           _buildNavItem(context, NavItem.chat, Icons.chat_bubble_outline, Icons.chat_bubble),
           _buildNavItem(context, NavItem.email, Icons.email_outlined, Icons.email),
           _buildNavItem(context, NavItem.reminders, Icons.notifications_outlined, Icons.notifications),
-          _buildNavItem(context, NavItem.meetings, Icons.calendar_today_outlined, Icons.calendar_today),
+          _buildNavItem(context, NavItem.schedule, Icons.calendar_today_outlined, Icons.calendar_today),
           _buildNavItem(context, NavItem.profile, Icons.person_outline, Icons.person),
         ],
       ),
@@ -64,7 +64,7 @@ class CustomBottomNav extends StatelessWidget {
           case NavItem.reminders:
             screen = const RemindersScreen();
             break;
-          case NavItem.meetings:
+          case NavItem.schedule:
             // FIX: I have now, finally, removed the 'const' keyword.
             screen = const ScheduleScreen();
             break;
