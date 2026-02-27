@@ -12,7 +12,8 @@ class TaskStorageService {
   static const String _deletedBoxName = 'deletedTasksBox';
 
   // Backend URL
-  final String baseUrl = "http://192.168.100.22:8000/api/v1";
+  final String baseUrl = "http://192.168.100.17:8000/api/v1"; // Hira
+  // final String baseUrl = "http://192.168.100.22:8000/api/v1"; // Waleed
 
   // 1. Initialize Boxes
   Future<void> init() async {
@@ -121,6 +122,32 @@ class TaskStorageService {
 
       await task.save();
       syncTasks();
+    }
+  }
+
+  // NEW: Cleanup function for missed meetings
+  Future<void> cleanupMissedMeetings() async {
+    final box = Hive.box<LocalTask>(_boxName);
+    final now = DateTime.now();
+
+    // Find all meetings that are in the past and not yet completed
+    final missedMeetings = box.values.where((task) {
+      // FIX: Corrected the typo in 'meeting'
+      return task.type == 'meeting' &&
+          !task.isCompleted &&
+          task.remindAt != null &&
+          task.remindAt!.isBefore(now);
+    }).toList();
+
+    for (var task in missedMeetings) {
+      task.isCompleted = true;
+      task.status = 'completed';
+      await task.save();
+    }
+
+    if (missedMeetings.isNotEmpty) {
+      print("🧹 Cleaned up ${missedMeetings.length} missed meetings.");
+      syncTasks(); // Sync the changes with the backend
     }
   }
 
